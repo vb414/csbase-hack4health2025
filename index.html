@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindfulMe - Your Mental Health Companion</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <nav>
+        <div class="nav-container">
+            <div class="logo" onclick="showHome()">🧠 MindfulMe</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showHome()">Home</a></li>
+                <li><a href="#" onclick="showFeature('mood')">Mood</a></li>
+                <li><a href="#" onclick="showFeature('breathing')">Breathe</a></li>
+                <li><a href="#" onclick="showFeature('journal')">Journal</a></li>
+                <li><a href="#" onclick="showFeature('insights')">Insights</a></li>
+                <li><a href="#" onclick="showFeature('resources')">Resources</a></li>
+            </ul>
+            <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</div>
+        </div>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" onclick="showHome(); toggleMobileMenu()">Home</a>
+        <a href="#" onclick="showFeature('mood'); toggleMobileMenu()">Mood</a>
+        <a href="#" onclick="showFeature('breathing'); toggleMobileMenu()">Breathe</a>
+        <a href="#" onclick="showFeature('journal'); toggleMobileMenu()">Journal</a>
+        <a href="#" onclick="showFeature('insights'); toggleMobileMenu()">Insights</a>
+        <a href="#" onclick="showFeature('resources'); toggleMobileMenu()">Resources</a>
+    </div>
+
+    <div class="hero" id="home">
+        <h1>Your Mental Health Companion</h1>
+        <p>Track your mood, practice mindfulness, and journal your thoughts in one beautiful app</p>
+        
+        <div class="quick-stats">
+            <div class="quick-stat-card">
+                <span class="quick-stat-emoji" id="currentMoodEmoji">😊</span>
+                <span class="quick-stat-label">Today's Mood</span>
+            </div>
+            <div class="quick-stat-card">
+                <span class="quick-stat-number" id="weeklyCheckIns">0</span>
+                <span class="quick-stat-label">Weekly Check-ins</span>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card" onclick="showFeature('mood')">
+                <div class="feature-icon">😊</div>
+                <h3 class="feature-title">Mood Tracker</h3>
+                <p>Log your daily emotions and discover patterns in your mental well-being</p>
+                <div class="feature-badge">Track Now</div>
+            </div>
+            
+            <div class="feature-card" onclick="showFeature('breathing')">
+                <div class="feature-icon">🌬️</div>
+                <h3 class="feature-title">Breathing Exercises</h3>
+                <p>Guided breathing sessions to reduce stress and anxiety</p>
+                <div class="feature-badge">Start Exercise</div>
+            </div>
+            
+            <div class="feature-card" onclick="showFeature('journal')">
+                <div class="feature-icon">📝</div>
+                <h3 class="feature-title">Thought Journal</h3>
+                <p>Write down your thoughts and reflect on your mental journey</p>
+                <div class="feature-badge">Write Entry</div>
+            </div>
+            
+            <div class="feature-card" onclick="showFeature('insights')">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Insights</h3>
+                <p>Visualize your mood patterns and track your progress</p>
+                <div class="feature-badge">View Insights</div>
+            </div>
+        </div>
+        
+        <div class="stats-dashboard">
+            <div class="stat-card">
+                <div class="stat-number" id="streakDays">0</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalEntries">0</div>
+                <div class="stat-label">Total Entries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgMood">😊</div>
+                <div class="stat-label">Average Mood</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="mindfulMinutes">0</div>
+                <div class="stat-label">Mindful Minutes</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mood-tracker" id="mood">
+        <button class="back-btn" onclick="showHome()">← Back</button>
+        <h2>How are you feeling today?</h2>
+        <div class="mood-check-time" id="moodCheckTime"></div>
+        
+        <div class="mood-options">
+            <button class="mood-btn" onclick="selectMood(this, '😢', 1)" data-tooltip="Very Sad">😢</button>
+            <button class="mood-btn" onclick="selectMood(this, '😟', 2)" data-tooltip="Sad">😟</button>
+            <button class="mood-btn" onclick="selectMood(this, '😐', 3)" data-tooltip="Neutral">😐</button>
+            <button class="mood-btn" onclick="selectMood(this, '🙂', 4)" data-tooltip="Good">🙂</button>
+            <button class="mood-btn" onclick="selectMood(this, '😊', 5)" data-tooltip="Very Happy">😊</button>
+        </div>
+        
+        <div class="mood-factors">
+            <h3>What's influencing your mood? (optional)</h3>
+            <div class="factor-chips">
+                <span class="chip" onclick="toggleChip(this)">💤 Sleep</span>
+                <span class="chip" onclick="toggleChip(this)">🏃 Exercise</span>
+                <span class="chip" onclick="toggleChip(this)">🍎 Diet</span>
+                <span class="chip" onclick="toggleChip(this)">👥 Social</span>
+                <span class="chip" onclick="toggleChip(this)">💼 Work</span>
+                <span class="chip" onclick="toggleChip(this)">🌤️ Weather</span>
+                <span class="chip" onclick="toggleChip(this)">❤️ Relationships</span>
+                <span class="chip" onclick="toggleChip(this)">💊 Health</span>
+            </div>
+        </div>
+        
+        <textarea class="mood-note" id="moodNote" placeholder="Add a note about how you're feeling... (optional)"></textarea>
+        
+        <button class="btn" onclick="saveMood()">Save Mood</button>
+    </div>
+
+    <div class="breathing-exercise" id="breathing">
+        <button class="back-btn" onclick="showHome()">← Back</button>
+        <h2>Breathing Exercises</h2>
+        <p>Choose a breathing technique that suits your needs</p>
+        
+        <div class="breathing-techniques">
+            <div class="technique-card" onclick="startBreathing('478')">
+                <h3>4-7-8 Breathing</h3>
+                <p>For deep relaxation and sleep</p>
+                <div class="technique-timing">4s in • 7s hold • 8s out</div>
+            </div>
+            <div class="technique-card" onclick="startBreathing('box')">
+                <h3>Box Breathing</h3>
+                <p>For focus and calmness</p>
+                <div class="technique-timing">4s in • 4s hold • 4s out • 4s hold</div>
+            </div>
+            <div class="technique-card" onclick="startBreathing('calm')">
+                <h3>Calm Breathing</h3>
+                <p>For quick stress relief</p>
+                <div class="technique-timing">3s in • 3s out</div>
+            </div>
+        </div>
+        
+        <div class="breathing-container" id="breathingContainer" style="display: none;">
+            <div class="breathing-circle" id="breathingCircle">
+                <span class="breathing-text" id="breathingText">Get Ready</span>
+            </div>
+            <div class="breathing-counter" id="breathingCounter"></div>
+            <div class="breathing-progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <button class="btn btn-secondary" onclick="stopBreathing()">Stop Exercise</button>
+        </div>
+    </div>
+
+    <div class="journal" id="journal">
+        <button class="back-btn" onclick="showHome()">← Back</button>
+        <h2>Today's Journal</h2>
+        
+        <div class="journal-prompt" id="journalPrompt"></div>
+        
+        <textarea class="journal-entry" id="journalEntry" placeholder="Write your thoughts here..."></textarea>
+        
+        <div class="journal-tools">
+            <span class="word-count" id="wordCount">0 words</span>
+            <div class="journal-tags">
+                <input type="text" class="tag-input" id="tagInput" placeholder="Add tags (press Enter)">
+                <div class="tags-container" id="tagsContainer"></div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="saveJournal()">Save Entry</button>
+        
+        <div class="past-entries">
+            <h3>Recent Entries</h3>
+            <div id="recentEntries"></div>
+        </div>
+    </div>
+
+    <div class="insights" id="insights">
+        <button class="back-btn" onclick="showHome()">← Back</button>
+        <h2>Your Mental Health Insights</h2>
+        
+        <div class="insights-container">
+            <div class="chart-container">
+                <h3>Mood Trends - Last 7 Days</h3>
+                <canvas id="moodChart"></canvas>
+            </div>
+            
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <h4>Mood Patterns</h4>
+                    <div id="moodPatterns"></div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>Top Mood Factors</h4>
+                    <div id="topFactors"></div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>Weekly Summary</h4>
+                    <div id="weeklySummary"></div>
+                </div>
+                
+                <div class="insight-card">
+                    <h4>Journal Themes</h4>
+                    <div id="journalThemes"></div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="exportData()">Export Your Data</button>
+    </div>
+
+    <div class="resources" id="resources">
+        <button class="back-btn" onclick="showHome()">← Back</button>
+        <h2>Mental Health Resources</h2>
+        
+        <div class="resources-grid">
+            <div class="resource-card">
+                <h3>🆘 Crisis Support</h3>
+                <p><strong>988 Suicide & Crisis Lifeline</strong><br>Call or text 988 for 24/7 support</p>
+                <p><strong>Crisis Text Line</strong><br>Text HOME to 741741</p>
+            </div>
+            
+            <div class="resource-card">
+                <h3>💡 Self-Care Tips</h3>
+                <ul>
+                    <li>Practice gratitude daily</li>
+                    <li>Maintain regular sleep schedule</li>
+                    <li>Stay physically active</li>
+                    <li>Connect with loved ones</li>
+                    <li>Limit social media use</li>
+                    <li>Practice mindfulness</li>
+                </ul>
+            </div>
+            
+            <div class="resource-card">
+                <h3>🧘 Mindfulness Exercises</h3>
+                <ul>
+                    <li>5-4-3-2-1 Grounding Technique</li>
+                    <li>Progressive Muscle Relaxation</li>
+                    <li>Mindful Walking</li>
+                    <li>Body Scan Meditation</li>
+                    <li>Loving-Kindness Meditation</li>
+                </ul>
+            </div>
+            
+            <div class="resource-card">
+                <h3>📚 Recommended Reading</h3>
+                <ul>
+                    <li>"The Happiness Trap" - Russ Harris</li>
+                    <li>"Feeling Good" - David Burns</li>
+                    <li>"The Body Keeps the Score" - Bessel van der Kolk</li>
+                    <li>"Atomic Habits" - James Clear</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="disclaimer">
+            <p><strong>Note:</strong> MindfulMe is not a substitute for professional mental health care. If you're experiencing severe symptoms or having thoughts of self-harm, please seek immediate professional help.</p>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMessage">
+        Entry saved successfully! 🎉
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
