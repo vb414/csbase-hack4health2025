@@ -1,5 +1,5 @@
 // MindfulMe - Enhanced Mental Health Companion
-// Main JavaScript Application
+// Main JavaScript Application with Achievement System
 
 // Data Management
 class MindfulMeApp {
@@ -10,16 +10,35 @@ class MindfulMeApp {
         this.currentTags = [];
         this.breathingInterval = null;
         this.breathingTimer = null;
+        this.achievements = this.initAchievements();
         this.init();
+    }
+
+    // Initialize achievements
+    initAchievements() {
+        return {
+            firstMood: { id: 'firstMood', name: 'First Step', description: 'Track your first mood', icon: '🌱', unlocked: false },
+            weekStreak: { id: 'weekStreak', name: 'Week Warrior', description: 'Maintain a 7-day streak', icon: '🔥', unlocked: false },
+            tenMoods: { id: 'tenMoods', name: 'Mood Master', description: 'Track 10 moods', icon: '📊', unlocked: false },
+            firstJournal: { id: 'firstJournal', name: 'Dear Diary', description: 'Write your first journal entry', icon: '📝', unlocked: false },
+            breathingPro: { id: 'breathingPro', name: 'Breathing Pro', description: 'Complete 5 breathing sessions', icon: '🌬️', unlocked: false },
+            earlyBird: { id: 'earlyBird', name: 'Early Bird', description: 'Track mood before 9 AM', icon: '🌅', unlocked: false },
+            nightOwl: { id: 'nightOwl', name: 'Night Owl', description: 'Track mood after 9 PM', icon: '🌙', unlocked: false },
+            moodExplorer: { id: 'moodExplorer', name: 'Mood Explorer', description: 'Use all 5 mood options', icon: '🎭', unlocked: false },
+            consistentUser: { id: 'consistentUser', name: 'Consistent User', description: 'Use app 3 days in a row', icon: '⭐', unlocked: false },
+            zenMaster: { id: 'zenMaster', name: 'Zen Master', description: '30 minutes of breathing exercises', icon: '🧘', unlocked: false }
+        };
     }
 
     // Initialize app
     init() {
+        this.loadAchievements();
         this.updateStats();
         this.updateDateTime();
         this.loadJournalPrompt();
         this.loadRecentEntries();
         this.checkDailyStreak();
+        this.displayAchievements();
         
         // Update time every minute
         setInterval(() => this.updateDateTime(), 60000);
@@ -40,6 +59,7 @@ class MindfulMeApp {
             breathingSessions: [],
             lastVisit: new Date().toDateString(),
             streak: 1,
+            usedMoodValues: new Set(),
             preferences: {
                 reminderTime: null,
                 theme: 'dark'
@@ -47,9 +67,142 @@ class MindfulMeApp {
         };
     }
 
+    // Load achievements
+    loadAchievements() {
+        const saved = localStorage.getItem('mindfulme_achievements');
+        if (saved) {
+            const savedAchievements = JSON.parse(saved);
+            Object.keys(savedAchievements).forEach(key => {
+                if (this.achievements[key]) {
+                    this.achievements[key].unlocked = savedAchievements[key].unlocked;
+                }
+            });
+        }
+    }
+
+    // Save achievements
+    saveAchievements() {
+        localStorage.setItem('mindfulme_achievements', JSON.stringify(this.achievements));
+    }
+
+    // Check and unlock achievements
+    checkAchievements() {
+        let newUnlock = false;
+
+        // First mood
+        if (this.data.moods.length >= 1 && !this.achievements.firstMood.unlocked) {
+            this.achievements.firstMood.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.firstMood);
+        }
+
+        // Ten moods
+        if (this.data.moods.length >= 10 && !this.achievements.tenMoods.unlocked) {
+            this.achievements.tenMoods.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.tenMoods);
+        }
+
+        // Week streak
+        if (this.data.streak >= 7 && !this.achievements.weekStreak.unlocked) {
+            this.achievements.weekStreak.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.weekStreak);
+        }
+
+        // First journal
+        if (this.data.journals.length >= 1 && !this.achievements.firstJournal.unlocked) {
+            this.achievements.firstJournal.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.firstJournal);
+        }
+
+        // Breathing pro
+        if (this.data.breathingSessions.length >= 5 && !this.achievements.breathingPro.unlocked) {
+            this.achievements.breathingPro.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.breathingPro);
+        }
+
+        // Zen master (30 minutes breathing)
+        const totalBreathingTime = this.data.breathingSessions.reduce((sum, session) => sum + session.duration, 0);
+        if (totalBreathingTime >= 1800 && !this.achievements.zenMaster.unlocked) {
+            this.achievements.zenMaster.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.zenMaster);
+        }
+
+        // Mood explorer
+        if (this.data.usedMoodValues && this.data.usedMoodValues.size >= 5 && !this.achievements.moodExplorer.unlocked) {
+            this.achievements.moodExplorer.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.moodExplorer);
+        }
+
+        // Consistent user (3 days in a row)
+        if (this.data.streak >= 3 && !this.achievements.consistentUser.unlocked) {
+            this.achievements.consistentUser.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.consistentUser);
+        }
+
+        if (newUnlock) {
+            this.saveAchievements();
+            this.displayAchievements();
+        }
+    }
+
+    // Show achievement notification
+    showAchievement(achievement) {
+        const notification = document.createElement('div');
+        notification.className = 'achievement-notification';
+        notification.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-text">
+                <div class="achievement-title">Achievement Unlocked!</div>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-desc">${achievement.description}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+    }
+
+    // Display achievements in home
+    displayAchievements() {
+        const container = document.getElementById('achievementsContainer');
+        if (!container) return;
+
+        const unlockedCount = Object.values(this.achievements).filter(a => a.unlocked).length;
+        const totalCount = Object.values(this.achievements).length;
+
+        container.innerHTML = `
+            <h3>🏆 Achievements (${unlockedCount}/${totalCount})</h3>
+            <div class="achievements-grid">
+                ${Object.values(this.achievements).map(achievement => `
+                    <div class="achievement-badge ${achievement.unlocked ? 'unlocked' : 'locked'}" 
+                         title="${achievement.description}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-name">${achievement.name}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
     // Save data to localStorage
     saveData() {
-        localStorage.setItem('mindfulme_data', JSON.stringify(this.data));
+        // Convert Set to Array for storage
+        const dataToSave = { ...this.data };
+        if (this.data.usedMoodValues instanceof Set) {
+            dataToSave.usedMoodValues = Array.from(this.data.usedMoodValues);
+        }
+        localStorage.setItem('mindfulme_data', JSON.stringify(dataToSave));
     }
 
     // Update date/time display
@@ -195,6 +348,7 @@ class MindfulMeApp {
         }
         
         const note = document.getElementById('moodNote').value;
+        const hour = new Date().getHours();
         
         const moodEntry = {
             date: new Date().toISOString(),
@@ -205,8 +359,29 @@ class MindfulMeApp {
         };
         
         this.data.moods.push(moodEntry);
+        
+        // Track used mood values
+        if (!this.data.usedMoodValues) {
+            this.data.usedMoodValues = new Set();
+        }
+        if (this.data.usedMoodValues instanceof Array) {
+            this.data.usedMoodValues = new Set(this.data.usedMoodValues);
+        }
+        this.data.usedMoodValues.add(this.currentMood.value);
+        
+        // Check time-based achievements
+        if (hour < 9 && !this.achievements.earlyBird.unlocked) {
+            this.achievements.earlyBird.unlocked = true;
+            this.showAchievement(this.achievements.earlyBird);
+        }
+        if (hour >= 21 && !this.achievements.nightOwl.unlocked) {
+            this.achievements.nightOwl.unlocked = true;
+            this.showAchievement(this.achievements.nightOwl);
+        }
+        
         this.saveData();
         this.updateStats();
+        this.checkAchievements();
         
         // Reset form
         document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
@@ -242,6 +417,7 @@ class MindfulMeApp {
         this.data.journals.push(journalEntry);
         this.saveData();
         this.updateStats();
+        this.checkAchievements();
         
         // Reset form
         document.getElementById('journalEntry').value = '';
@@ -295,7 +471,6 @@ class MindfulMeApp {
         const sessionStart = Date.now();
         let currentPhase = 0;
         let phaseStart = Date.now();
-        let currentCount = phases[0].duration;
         
         // Animation function
         const animate = () => {
@@ -360,6 +535,7 @@ class MindfulMeApp {
             });
             this.saveData();
             this.updateStats();
+            this.checkAchievements();
         }
         
         // Reset UI
@@ -512,93 +688,239 @@ class MindfulMeApp {
     }
 
     // Update top factors
-    updateTopFactors() {20px;
-    padding: 2rem;
-    margin: 2rem auto;
-    max-width: 800px;
-    text-align: center;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    display: none;
+    updateTopFactors() {
+        const factorsDiv = document.getElementById('topFactors');
+        
+        const factorCounts = {};
+        this.data.moods.forEach(mood => {
+            if (mood.factors) {
+                mood.factors.forEach(factor => {
+                    factorCounts[factor] = (factorCounts[factor] || 0) + 1;
+                });
+            }
+        });
+        
+        const sortedFactors = Object.entries(factorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        
+        if (sortedFactors.length === 0) {
+            factorsDiv.innerHTML = '<p class="insight-item">No mood factors tracked yet</p>';
+            return;
+        }
+        
+        factorsDiv.innerHTML = sortedFactors.map(([factor, count]) => `
+            <div class="factor-bar">
+                <span class="factor-name">${factor}</span>
+                <span class="factor-count">${count}</span>
+            </div>
+        `).join('');
+    }
+
+    // Update weekly summary
+    updateWeeklySummary() {
+        const summaryDiv = document.getElementById('weeklySummary');
+        
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        
+        const weekMoods = this.data.moods.filter(mood => new Date(mood.date) >= weekAgo);
+        const weekJournals = this.data.journals.filter(journal => new Date(journal.date) >= weekAgo);
+        const weekBreathing = this.data.breathingSessions.filter(session => new Date(session.date) >= weekAgo);
+        
+        const avgMood = weekMoods.length > 0 
+            ? (weekMoods.reduce((sum, mood) => sum + mood.value, 0) / weekMoods.length).toFixed(1)
+            : 'N/A';
+        
+        const totalBreathingMins = Math.floor(weekBreathing.reduce((sum, session) => sum + session.duration, 0) / 60);
+        
+        summaryDiv.innerHTML = `
+            <p class="insight-item">📊 Mood checks: <strong>${weekMoods.length}</strong></p>
+            <p class="insight-item">📝 Journal entries: <strong>${weekJournals.length}</strong></p>
+            <p class="insight-item">🌬️ Breathing minutes: <strong>${totalBreathingMins}</strong></p>
+            <p class="insight-item">😊 Average mood: <strong>${avgMood}/5</strong></p>
+        `;
+    }
+
+    // Update journal themes
+    updateJournalThemes() {
+        const themesDiv = document.getElementById('journalThemes');
+        
+        const allTags = {};
+        this.data.journals.forEach(journal => {
+            if (journal.tags) {
+                journal.tags.forEach(tag => {
+                    allTags[tag] = (allTags[tag] || 0) + 1;
+                });
+            }
+        });
+        
+        const sortedTags = Object.entries(allTags).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        
+        if (sortedTags.length === 0) {
+            themesDiv.innerHTML = '<p class="insight-item">No journal tags yet</p>';
+            return;
+        }
+        
+        themesDiv.innerHTML = sortedTags.map(([tag, count]) => `
+            <div class="factor-bar">
+                <span class="factor-name">#${tag}</span>
+                <span class="factor-count">${count}</span>
+            </div>
+        `).join('');
+    }
+
+    // Export data
+    exportData() {
+        const dataStr = JSON.stringify(this.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `mindfulme_export_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showSuccess('Data exported successfully! 📁');
+    }
+
+    // Show success message
+    showSuccess(message, type = 'success') {
+        const successMsg = document.getElementById('successMessage');
+        successMsg.textContent = message;
+        
+        if (type === 'warning') {
+            successMsg.style.background = 'var(--accent)';
+        } else {
+            successMsg.style.background = 'var(--success)';
+        }
+        
+        successMsg.classList.add('show');
+        setTimeout(() => successMsg.classList.remove('show'), 3000);
+    }
+
+    // Update word count
+    updateWordCount() {
+        const content = document.getElementById('journalEntry').value;
+        const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+        document.getElementById('wordCount').textContent = `${wordCount} words`;
+    }
 }
 
-.breathing-techniques {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
+// Global app instance
+let app;
+
+// Initialize app when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    app = new MindfulMeApp();
+    
+    // Add event listeners
+    document.getElementById('journalEntry').addEventListener('input', () => app.updateWordCount());
+    
+    document.getElementById('tagInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTag();
+        }
+    });
+});
+
+// Navigation functions
+function showHome() {
+    hideAllSections();
+    document.getElementById('home').style.display = 'block';
+    app.updateStats();
+    app.displayAchievements();
 }
 
-.technique-card {
-    background: rgba(99, 102, 241, 0.1);
-    border-radius: 15px;
-    padding: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
+function showFeature(feature) {
+    hideAllSections();
+    document.getElementById(feature).style.display = 'block';
+    
+    if (feature === 'insights') {
+        app.updateInsights();
+    }
 }
 
-.technique-card:hover {
-    background: rgba(99, 102, 241, 0.2);
-    border-color: var(--primary);
-    transform: translateY(-3px);
+function hideAllSections() {
+    const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources'];
+    sections.forEach(section => {
+        document.getElementById(section).style.display = 'none';
+    });
 }
 
-.technique-card h3 {
-    color: var(--primary);
-    margin-bottom: 0.5rem;
+// Mobile menu toggle
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobileMenu');
+    mobileMenu.classList.toggle('active');
 }
 
-.technique-timing {
-    color: var(--accent);
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
+// Mood tracking functions
+function selectMood(btn, emoji, value) {
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    app.currentMood = { emoji, value };
 }
 
-.breathing-container {
-    margin-top: 2rem;
+function toggleChip(chip) {
+    chip.classList.toggle('selected');
+    const factor = chip.textContent.trim();
+    
+    if (chip.classList.contains('selected')) {
+        app.selectedFactors.push(factor);
+    } else {
+        app.selectedFactors = app.selectedFactors.filter(f => f !== factor);
+    }
 }
 
-.breathing-circle {
-    width: 200px;
-    height: 200px;
-    margin: 2rem auto;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--primary), var(--secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    box-shadow: 0 0 40px rgba(99, 102, 241, 0.5);
-    position: relative;
+function saveMood() {
+    app.saveMood();
 }
 
-.breathing-circle.breathing-in {
-    animation: breatheIn 4s ease-in-out;
+// Breathing functions
+function startBreathing(type) {
+    app.startBreathing(type);
 }
 
-.breathing-circle.breathing-out {
-    animation: breatheOut 4s ease-in-out;
+function stopBreathing() {
+    app.stopBreathing();
 }
 
-@keyframes breatheIn {
-    from { transform: scale(1); }
-    to { transform: scale(1.3); }
+// Journal functions
+function saveJournal() {
+    app.saveJournal();
 }
 
-@keyframes breatheOut {
-    from { transform: scale(1.3); }
-    to { transform: scale(1); }
+function addTag() {
+    const input = document.getElementById('tagInput');
+    const tag = input.value.trim();
+    
+    if (tag && !app.currentTags.includes(tag)) {
+        app.currentTags.push(tag);
+        
+        const tagEl = document.createElement('span');
+        tagEl.className = 'tag';
+        tagEl.innerHTML = `${tag} <span class="remove-tag" onclick="removeTag('${tag}')">×</span>`;
+        
+        document.getElementById('tagsContainer').appendChild(tagEl);
+        input.value = '';
+    }
 }
 
-.breathing-counter {
-    font-size: 3rem;
-    color: var(--accent);
-    margin: 1rem 0;
+function removeTag(tag) {
+    app.currentTags = app.currentTags.filter(t => t !== tag);
+    
+    const tagsContainer = document.getElementById('tagsContainer');
+    const tags = tagsContainer.querySelectorAll('.tag');
+    tags.forEach(tagEl => {
+        if (tagEl.textContent.includes(tag)) {
+            tagEl.remove();
+        }
+    });
 }
 
-.breathing-progress {
-    width: 300px;
-    height: 10px;
-    background: rgba(99, 102, 241, 0.2);
-    border-radius: # MindfulMe - Complete GitHub Repository Files
+// Export data function
+function exportData() {
+    app.exportData();
+}
