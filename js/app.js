@@ -10,6 +10,10 @@ class MindfulMeApp {
         this.currentTags = [];
         this.breathingInterval = null;
         this.breathingTimer = null;
+        this.sessionStartTime = null;
+        this.sessionTimer = null;
+        this.isPaused = false;
+        this.cycleCount = 0;
         this.achievements = this.initAchievements();
         this.init();
     }
@@ -51,7 +55,12 @@ class MindfulMeApp {
     loadData() {
         const savedData = localStorage.getItem('mindfulme_data');
         if (savedData) {
-            return JSON.parse(savedData);
+            const data = JSON.parse(savedData);
+            // Convert array back to Set for usedMoodValues
+            if (data.usedMoodValues && Array.isArray(data.usedMoodValues)) {
+                data.usedMoodValues = new Set(data.usedMoodValues);
+            }
+            return data;
         }
         return {
             moods: [],
@@ -436,11 +445,17 @@ class MindfulMeApp {
         const text = document.getElementById('breathingText');
         const counter = document.getElementById('breathingCounter');
         const progressBar = document.getElementById('progressBar');
+        const cyclesEl = document.getElementById('cyclesCount');
         
         container.style.display = 'block';
         
         // Hide technique cards
         document.querySelector('.breathing-techniques').style.display = 'none';
+        
+        // Reset counters
+        this.cycleCount = 0;
+        this.isPaused = false;
+        cyclesEl.textContent = '0';
         
         let phases;
         switch(type) {
@@ -468,40 +483,57 @@ class MindfulMeApp {
         }
         
         const totalDuration = phases.reduce((sum, phase) => sum + phase.duration, 0);
-        const sessionStart = Date.now();
+        this.sessionStartTime = Date.now();
         let currentPhase = 0;
         let phaseStart = Date.now();
         
+        // Start session timer
+        this.updateSessionTimer();
+        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
+        
         // Animation function
         const animate = () => {
-            const now = Date.now();
-            const phaseElapsed = (now - phaseStart) / 1000;
-            const totalElapsed = (now - sessionStart) / 1000;
-            
-            // Update counter
-            const remaining = Math.ceil(phases[currentPhase].duration - phaseElapsed);
-            counter.textContent = remaining;
-            
-            // Update progress bar
-            const progress = (totalElapsed % totalDuration) / totalDuration * 100;
-            progressBar.style.width = `${progress}%`;
-            
-            // Check if phase is complete
-            if (phaseElapsed >= phases[currentPhase].duration) {
-                currentPhase = (currentPhase + 1) % phases.length;
-                phaseStart = now;
+            if (!this.isPaused) {
+                const now = Date.now();
+                const phaseElapsed = (now - phaseStart) / 1000;
+                const totalElapsed = (now - this.sessionStartTime) / 1000;
                 
-                // Update text and animation
-                text.textContent = phases[currentPhase].text;
+                // Update counter
+                const remaining = Math.ceil(phases[currentPhase].duration - phaseElapsed);
+                counter.textContent = remaining;
                 
-                // Remove all animation classes
-                circle.classList.remove('breathing-in', 'breathing-out');
+                // Update progress bar
+                const progress = (totalElapsed % totalDuration) / totalDuration * 100;
+                progressBar.style.width = `${progress}%`;
                 
-                // Add appropriate animation class
-                if (phases[currentPhase].action === 'in') {
-                    circle.classList.add('breathing-in');
-                } else if (phases[currentPhase].action === 'out') {
-                    circle.classList.add('breathing-out');
+                // Check if phase is complete
+                if (phaseElapsed >= phases[currentPhase].duration) {
+                    currentPhase = (currentPhase + 1) % phases.length;
+                    
+                    // Increment cycle count when completing a full cycle
+                    if (currentPhase === 0) {
+                        this.cycleCount++;
+                        cyclesEl.textContent = this.cycleCount;
+                    }
+                    
+                    phaseStart = now;
+                    
+                    // Update text and animation
+                    text.textContent = phases[currentPhase].text;
+                    
+                    // Update breathing animation
+                    circle.classList.remove('breathing-in', 'breathing-out');
+                    circle.style.animation = 'none';
+                    
+                    // Force reflow
+                    void circle.offsetWidth;
+                    
+                    // Add appropriate animation
+                    if (phases[currentPhase].action === 'in') {
+                        circle.style.animation = `breatheIn ${phases[currentPhase].duration}s ease-in-out`;
+                    } else if (phases[currentPhase].action === 'out') {
+                        circle.style.animation = `breatheOut ${phases[currentPhase].duration}s ease-in-out`;
+                    }
                 }
             }
             
@@ -511,12 +543,24 @@ class MindfulMeApp {
         // Start animation
         text.textContent = phases[0].text;
         if (phases[0].action === 'in') {
-            circle.classList.add('breathing-in');
+            circle.style.animation = `breatheIn ${phases[0].duration}s ease-in-out`;
         }
         animate();
         
         // Track session duration
-        this.breathingTimer = sessionStart;
+        this.breathingTimer = this.sessionStartTime;
+    }
+
+    // Add session timer update method
+    updateSessionTimer() {
+        if (!this.sessionStartTime || this.isPaused) return;
+        
+        const elapsed = Math.floor((Date.now() - this.sessionStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        
+        document.getElementById('sessionTimer').textContent = 
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
     // Stop breathing exercise
@@ -526,12 +570,19 @@ class MindfulMeApp {
             this.breathingInterval = null;
         }
         
+        // Clear session timer
+        if (this.sessionTimer) {
+            clearInterval(this.sessionTimer);
+            this.sessionTimer = null;
+        }
+        
         // Save session
         if (this.breathingTimer) {
             const duration = Math.floor((Date.now() - this.breathingTimer) / 1000);
             this.data.breathingSessions.push({
                 date: new Date().toISOString(),
-                duration: duration
+                duration: duration,
+                cycles: this.cycleCount
             });
             this.saveData();
             this.updateStats();
@@ -541,13 +592,32 @@ class MindfulMeApp {
         // Reset UI
         document.getElementById('breathingContainer').style.display = 'none';
         document.querySelector('.breathing-techniques').style.display = 'grid';
-        document.getElementById('breathingCircle').classList.remove('breathing-in', 'breathing-out');
+        document.getElementById('breathingCircle').style.animation = 'none';
+        document.getElementById('sessionTimer').textContent = '0:00';
+        document.getElementById('cyclesCount').textContent = '0';
         
-        this.showSuccess('Great breathing session! Feel the calm. 🌊');
+        this.showSuccess(`Great session! ${this.cycleCount} cycles completed. 🌊`);
+        
+        // Reset variables
+        this.sessionStartTime = null;
+        this.cycleCount = 0;
+        this.isPaused = false;
     }
 
     // Update insights
     updateInsights() {
+        // Check if there's any data
+        if (this.data.moods.length === 0 && this.data.journals.length === 0) {
+            document.getElementById('insightsMessage').style.display = 'block';
+            document.querySelector('.insights-grid').style.display = 'none';
+            document.querySelector('.chart-section').style.display = 'none';
+            return;
+        } else {
+            document.getElementById('insightsMessage').style.display = 'none';
+            document.querySelector('.insights-grid').style.display = 'grid';
+            document.querySelector('.chart-section').style.display = 'block';
+        }
+
         this.updateMoodChart();
         this.updateMoodPatterns();
         this.updateTopFactors();
@@ -557,7 +627,10 @@ class MindfulMeApp {
 
     // Update mood chart
     updateMoodChart() {
-        const ctx = document.getElementById('moodChart').getContext('2d');
+        const canvas = document.getElementById('moodChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
         
         // Get last 7 days of data
         const days = [];
@@ -602,7 +675,8 @@ class MindfulMeApp {
                     pointHoverRadius: 8,
                     pointBackgroundColor: '#6366f1',
                     pointBorderColor: '#fff',
-                    pointBorderWidth: 2
+                    pointBorderWidth: 2,
+                    spanGaps: true
                 }]
             },
             options: {
@@ -627,20 +701,25 @@ class MindfulMeApp {
                 },
                 scales: {
                     y: {
-                        beginAtZero: true,
+                        beginAtZero: false,
+                        min: 0,
                         max: 5,
                         ticks: {
                             stepSize: 1,
                             callback: function(value) {
                                 const moodEmojis = ['', '😢', '😟', '😐', '🙂', '😊'];
                                 return moodEmojis[value] || '';
-                            }
+                            },
+                            color: '#cbd5e1'
                         },
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)'
                         }
                     },
                     x: {
+                        ticks: {
+                            color: '#cbd5e1'
+                        },
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)'
                         }
@@ -885,6 +964,19 @@ function startBreathing(type) {
 
 function stopBreathing() {
     app.stopBreathing();
+}
+
+// Add pause/resume functionality
+function pauseBreathing() {
+    const pauseBtn = document.getElementById('pauseBtn');
+    if (app.isPaused) {
+        app.isPaused = false;
+        pauseBtn.textContent = 'Pause';
+        app.sessionStartTime = Date.now(); // Reset timer
+    } else {
+        app.isPaused = true;
+        pauseBtn.textContent = 'Resume';
+    }
 }
 
 // Journal functions
