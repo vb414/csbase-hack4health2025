@@ -2094,3 +2094,514 @@ nav {
 .mood-btn.selected .mood-label {
     font-weight: 500 !important;
 }
+
+/* Daily Puzzle Section */
+.daily-puzzle {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    display: none;
+}
+
+/* Puzzle Selector */
+.puzzle-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.puzzle-type-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(30, 41, 59, 0.6));
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.puzzle-type-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.puzzle-type-card:hover::before {
+    opacity: 1;
+    transform: translate(25%, 25%);
+}
+
+.puzzle-type-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    border-color: var(--primary);
+}
+
+.puzzle-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.puzzle-type-card h3 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.puzzle-type-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.difficulty-badge {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.difficulty-badge.easy {
+    background: rgba(52, 211, 153, 0.2);
+    color: var(--success);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.difficulty-badge.medium {
+    background: rgba(251, 191, 36, 0.2);
+    color: var(--accent);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.difficulty-badge.hard {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Puzzle Container */
+.puzzle-container {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.puzzle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.sudoku-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 1px;
+    background: var(--primary);
+    padding: 2px;
+    border-radius: 15px;
+    max-width: 450px;
+}
+
+.sudoku-cell {
+    aspect-ratio: 1;
+    background: rgba(30, 41, 59, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.sudoku-cell:nth-child(3n+3):not(:nth-child(9n)) {
+    border-right: 2px solid var(--primary);
+}
+
+.sudoku-cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 2px solid var(--primary);
+}
+
+.sudoku-cell:hover:not(.fixed) {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.sudoku-cell.selected {
+    background: rgba(99, 102, 241, 0.3);
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+.sudoku-cell.fixed {
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text-secondary);
+    cursor: default;
+}
+
+.sudoku-cell.error {
+    color: #ef4444;
+    animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.sudoku-controls {
+    margin-top: 1rem;
+}
+
+.number-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+}
+
+.num-btn {
+    padding: 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.num-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+}
+
+.num-btn.erase {
+    grid-column: span 2;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.num-btn.erase:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Puzzle Actions */
+.puzzle-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+/* Puzzle Complete */
+.puzzle-complete {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(167, 139, 250, 0.1));
+    border-radius: 20px;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.complete-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: celebrate 1s ease;
+}
+
+@keyframes celebrate {
+    0% { transform: scale(0) rotate(0); }
+    50% { transform: scale(1.2) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.puzzle-complete h3 {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.puzzle-complete p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+.complete-stats {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.complete-stats .stat {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--accent);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .puzzle-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .word-search-game,
+    .crossword-game {
+        grid-template-columns: 1fr;
+    }
+    
+    .word-grid,
+    .crossword-grid {
+        max-width: 100%;
+    }
+    
+    .number-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .num-btn.erase {
+        grid-column: span 3;
+    }
+}margin-bottom: 2rem;
+}
+
+.puzzle-header h3 {
+    color: var(--primary);
+    font-size: 1.5rem;
+}
+
+.puzzle-stats {
+    display: flex;
+    gap: 2rem;
+}
+
+.puzzle-timer, .puzzle-score {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.timer-icon, .score-icon {
+    font-size: 1.2rem;
+}
+
+#puzzleTimer, #puzzleScore {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+/* Word Search Game */
+.word-search-game {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.word-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 1rem;
+    border-radius: 15px;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+}
+
+.word-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+}
+
+.word-cell:hover {
+    background: rgba(99, 102, 241, 0.3);
+    transform: scale(1.1);
+}
+
+.word-cell.selected {
+    background: var(--primary);
+    color: white;
+}
+
+.word-cell.found {
+    background: var(--success);
+    color: white;
+    animation: foundPulse 0.5s ease;
+}
+
+@keyframes foundPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.word-list {
+    background: rgba(30, 41, 59, 0.5);
+    padding: 1.5rem;
+    border-radius: 15px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.word-list h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.word-item {
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.word-item.found {
+    background: rgba(52, 211, 153, 0.2);
+    text-decoration: line-through;
+    color: var(--success);
+}
+
+/* Crossword Game */
+.crossword-game {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.crossword-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 1px;
+    background: rgba(99, 102, 241, 0.2);
+    padding: 1px;
+    border-radius: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.crossword-cell {
+    aspect-ratio: 1;
+    background: white;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.crossword-cell.black {
+    background: var(--bg-dark);
+}
+
+.crossword-cell input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--bg-dark);
+    text-transform: uppercase;
+}
+
+.crossword-cell input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+.crossword-cell .cell-number {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 0.7rem;
+    color: #666;
+}
+
+.crossword-clues {
+    background: rgba(30, 41, 59, 0.5);
+    padding: 1.5rem;
+    border-radius: 15px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.clues-section {
+    margin-bottom: 2rem;
+}
+
+.clues-section h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.clue-item {
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 5px;
+}
+
+.clue-item:hover {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.clue-item.active {
+    background: rgba(99, 102, 241, 0.2);
+    border-left: 3px solid var(--primary);
+}
+
+/* Sudoku Game */
+.sudoku-game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
