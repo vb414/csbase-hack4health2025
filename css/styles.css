@@ -1694,3 +1694,403 @@ nav {
         gap: 1rem;
     }
 }
+
+.mood-tracker {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    margin: 2rem auto;
+    max-width: 900px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    display: none;
+}
+
+.mood-options {
+    display: flex;
+    justify-content: center;
+    margin: 3rem 0;
+    flex-wrap: wrap;
+    gap: 2rem;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 20px;
+}
+
+.mood-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    background: rgba(30, 41, 59, 0.5);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    width: 120px;
+    height: 120px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.mood-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 30%, rgba(99, 102, 241, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mood-btn:hover::before {
+    opacity: 1;
+}
+
+.mood-emoji {
+    font-size: 3.5rem;
+    display: block;
+    filter: grayscale(0.3);
+    transition: all 0.3s ease;
+}
+
+.mood-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    text-align: center;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.mood-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(99, 102, 241, 0.1);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+.mood-btn:hover .mood-emoji {
+    filter: grayscale(0);
+    transform: scale(1.1);
+}
+
+.mood-btn:hover .mood-label {
+    color: var(--primary);
+    opacity: 1;
+    font-weight: 500;
+}
+
+.mood-btn.selected {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+}
+
+.mood-btn.selected .mood-emoji {
+    filter: grayscale(0);
+    animation: bounce 0.5s ease;
+}
+
+.mood-btn.selected .mood-label {
+    color: var(--accent);
+    font-weight: 600;
+    opacity: 1;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Enhanced Breathing Techniques Selection */
+.breathing-techniques {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 25px;
+}
+
+.technique-card {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(30, 41, 59, 0.6));
+    border-radius: 20px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.technique-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+    transform: rotate(45deg);
+    transition: all 0.6s ease;
+    opacity: 0;
+}
+
+.technique-card:hover::before {
+    opacity: 1;
+    transform: rotate(45deg) translate(20%, 20%);
+}
+
+.technique-card::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, var(--primary), var(--secondary), var(--primary));
+    border-radius: 20px;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
+.technique-card:hover::after {
+    opacity: 1;
+}
+
+.technique-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+    border-color: transparent;
+}
+
+.technique-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+    filter: grayscale(0.2);
+    transition: all 0.4s ease;
+}
+
+.technique-card:hover .technique-icon {
+    filter: grayscale(0);
+    transform: scale(1.1) rotate(5deg);
+}
+
+.technique-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.technique-card:hover h3 {
+    color: var(--primary);
+    transform: scale(1.05);
+}
+
+.technique-card p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.technique-timing {
+    display: inline-block;
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--accent);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    transition: all 0.3s ease;
+}
+
+.technique-card:hover .technique-timing {
+    background: rgba(251, 191, 36, 0.2);
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+/* Breathing Exercise Container Improvements */
+.breathing-exercise {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 25px;
+    padding: 3rem 2rem;
+    margin: 2rem auto;
+    max-width: 900px;
+    text-align: center;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    display: none;
+}
+
+.breathing-exercise h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, var(--text-primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.breathing-exercise > p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+/* Mood Factors Enhancement */
+.mood-factors {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 20px;
+}
+
+.mood-factors h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.factor-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    justify-content: center;
+}
+
+.chip {
+    background: rgba(30, 41, 59, 0.6);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.chip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.chip:hover::before {
+    left: 100%;
+}
+
+.chip:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+}
+
+.chip.selected {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(167, 139, 250, 0.3));
+    border-color: var(--primary);
+    color: white;
+    font-weight: 500;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+/* Mood Note Enhancement */
+.mood-note {
+    width: 100%;
+    min-height: 120px;
+    background: rgba(15, 23, 42, 0.5);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 15px;
+    padding: 1rem;
+    color: var(--text-primary);
+    resize: vertical;
+    margin: 2rem 0;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.mood-note::placeholder {
+    color: rgba(203, 213, 225, 0.5);
+}
+
+.mood-note:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(15, 23, 42, 0.7);
+    box-shadow: 0 0 25px rgba(99, 102, 241, 0.3);
+}
+
+/* Button Enhancement for Mood Page */
+.mood-tracker .btn-primary {
+    margin-top: 1rem;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive Updates */
+@media (max-width: 768px) {
+    .mood-options {
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .mood-btn {
+        width: 100px;
+        height: 100px;
+        padding: 0.8rem;
+    }
+    
+    .mood-emoji {
+        font-size: 2.5rem;
+    }
+    
+    .mood-label {
+        font-size: 0.75rem;
+    }
+    
+    .breathing-techniques {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .technique-card {
+        padding: 1.5rem;
+    }
+    
+    .technique-icon {
+        font-size: 2.5rem;
+    }
+}
+
+/* Remove bold from mood labels globally */
+.mood-btn * {
+    font-weight: normal !important;
+}
+
+.mood-btn.selected .mood-label {
+    font-weight: 500 !important;
+}
