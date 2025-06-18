@@ -110,54 +110,54 @@
     </div>
 
     <div class="mood-tracker" id="mood">
-        <button class="back-btn" onclick="showHome()">← Back</button>
-        <div class="section-header">
-            <h2>How are you feeling right now?</h2>
-            <p class="section-subtitle">Take a moment to check in with yourself</p>
-        </div>
-        <div class="mood-check-time" id="moodCheckTime"></div>
-        
-        <div class="mood-options">
-            <button class="mood-btn" onclick="selectMood(this, '😢', 1)" data-tooltip="Very Sad">
-                <span class="mood-emoji">😢</span>
-                <span class="mood-label">Very Sad</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this, '😟', 2)" data-tooltip="Sad">
-                <span class="mood-emoji">😟</span>
-                <span class="mood-label">Sad</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this, '😐', 3)" data-tooltip="Neutral">
-                <span class="mood-emoji">😐</span>
-                <span class="mood-label">Neutral</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this, '🙂', 4)" data-tooltip="Good">
-                <span class="mood-emoji">🙂</span>
-                <span class="mood-label">Good</span>
-            </button>
-            <button class="mood-btn" onclick="selectMood(this, '😊', 5)" data-tooltip="Very Happy">
-                <span class="mood-emoji">😊</span>
-                <span class="mood-label">Great</span>
-            </button>
-        </div>
-        
-        <div class="mood-factors">
-            <h3>What's influencing your mood today?</h3>
-            <div class="factor-chips">
-                <span class="chip" onclick="toggleChip(this)">💤 Sleep</span>
-                <span class="chip" onclick="toggleChip(this)">🏃 Exercise</span>
-                <span class="chip" onclick="toggleChip(this)">🍎 Diet</span>
-                <span class="chip" onclick="toggleChip(this)">👥 Social</span>
-                <span class="chip" onclick="toggleChip(this)">💼 Work</span>
-                <span class="chip" onclick="toggleChip(this)">🌤️ Weather</span>
-                <span class="chip" onclick="toggleChip(this)">❤️ Relationships</span>
-                <span class="chip" onclick="toggleChip(this)">💊 Health</span>
-            </div>
-        </div>
-        
-        <textarea class="mood-note" id="moodNote" placeholder="Want to add more details? Write anything on your mind... (optional)"></textarea>
-        
-        <button class="btn btn-primary" onclick="saveMood()">Save My Mood</button>
+    <button class="back-btn" onclick="showHome()">← Back</button>
+    <div class="section-header">
+        <h2>How are you feeling right now?</h2>
+        <p class="section-subtitle">Take a moment to check in with yourself</p>
     </div>
+    <div class="mood-check-time" id="moodCheckTime"></div>
+    
+    <div class="mood-options">
+        <button class="mood-btn" onclick="selectMood(this, '😢', 1)">
+            <span class="mood-emoji">😢</span>
+            <span class="mood-label">Very Sad</span>
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, '😟', 2)">
+            <span class="mood-emoji">😟</span>
+            <span class="mood-label">Sad</span>
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, '😐', 3)">
+            <span class="mood-emoji">😐</span>
+            <span class="mood-label">Neutral</span>
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, '🙂', 4)">
+            <span class="mood-emoji">🙂</span>
+            <span class="mood-label">Good</span>
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, '😊', 5)">
+            <span class="mood-emoji">😊</span>
+            <span class="mood-label">Great</span>
+        </button>
+    </div>
+    
+    <div class="mood-factors">
+        <h3>What's influencing your mood today?</h3>
+        <div class="factor-chips">
+            <span class="chip" onclick="toggleChip(this)">💤 Sleep</span>
+            <span class="chip" onclick="toggleChip(this)">🏃 Exercise</span>
+            <span class="chip" onclick="toggleChip(this)">🍎 Diet</span>
+            <span class="chip" onclick="toggleChip(this)">👥 Social</span>
+            <span class="chip" onclick="toggleChip(this)">💼 Work</span>
+            <span class="chip" onclick="toggleChip(this)">🌤️ Weather</span>
+            <span class="chip" onclick="toggleChip(this)">❤️ Relationships</span>
+            <span class="chip" onclick="toggleChip(this)">💊 Health</span>
+        </div>
+    </div>
+    
+    <textarea class="mood-note" id="moodNote" placeholder="Want to add more details? Write anything on your mind... (optional)"></textarea>
+    
+    <button class="btn btn-primary" onclick="saveMood()">Save My Mood</button>
+</div>
 
     <div class="breathing-exercise" id="breathing">
         <button class="back-btn" onclick="showHome()">← Back</button>
