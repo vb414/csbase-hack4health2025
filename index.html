@@ -249,53 +249,55 @@
     </div>
 
     <div class="insights" id="insights">
-        <button class="back-btn" onclick="showHome()">← Back</button>
-        <div class="section-header">
-            <h2>Your Mental Health Insights</h2>
-            <p class="section-subtitle">Understanding your patterns and progress</p>
-        </div>
-        
-        <div class="insights-container">
-            <div class="chart-section">
-                <div class="chart-container">
-                    <h3>Mood Trends - Last 7 Days</h3>
-                    <canvas id="moodChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="insights-grid">
-                <div class="insight-card">
-                    <div class="insight-icon">📅</div>
-                    <h4>Mood Patterns</h4>
-                    <div id="moodPatterns"></div>
-                </div>
-                
-                <div class="insight-card">
-                    <div class="insight-icon">🎯</div>
-                    <h4>Top Mood Factors</h4>
-                    <div id="topFactors"></div>
-                </div>
-                
-                <div class="insight-card">
-                    <div class="insight-icon">📈</div>
-                    <h4>Weekly Summary</h4>
-                    <div id="weeklySummary"></div>
-                </div>
-                
-                <div class="insight-card">
-                    <div class="insight-icon">🏷️</div>
-                    <h4>Journal Themes</h4>
-                    <div id="journalThemes"></div>
-                </div>
-            </div>
-            
-            <div class="insights-message" id="insightsMessage">
-                <p>Start tracking your mood and journaling to see personalized insights!</p>
-            </div>
-        </div>
-        
-        <button class="btn btn-secondary" onclick="exportData()">📥 Export Your Data</button>
+    <button class="back-btn" onclick="showHome()">← Back</button>
+    <div class="section-header">
+        <h2>Your Mental Health Insights</h2>
+        <p class="section-subtitle">Understanding your patterns and progress</p>
     </div>
+    
+    <div class="insights-container">
+        <div class="chart-section" style="display: none;">
+            <div class="chart-container">
+                <h3>Mood Trends - Last 7 Days</h3>
+                <canvas id="moodChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+        
+        <div class="insights-grid" style="display: none;">
+            <div class="insight-card">
+                <div class="insight-icon">📅</div>
+                <h4>Mood Patterns</h4>
+                <div id="moodPatterns"></div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon">🎯</div>
+                <h4>Top Mood Factors</h4>
+                <div id="topFactors"></div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon">📈</div>
+                <h4>Weekly Summary</h4>
+                <div id="weeklySummary"></div>
+            </div>
+            
+            <div class="insight-card">
+                <div class="insight-icon">🏷️</div>
+                <h4>Journal Themes</h4>
+                <div id="journalThemes"></div>
+            </div>
+        </div>
+        
+        <div class="insights-message" id="insightsMessage" style="display: none;">
+            <p>📊 No data to display yet!</p>
+            <p>Start tracking your mood and journaling to see personalized insights about your mental health patterns.</p>
+            <a href="#" class="start-tracking-btn" onclick="showFeature('mood'); return false;">Start Tracking Now →</a>
+        </div>
+    </div>
+    
+    <button class="btn btn-secondary" onclick="exportData()" style="margin-top: 2rem;">📥 Export Your Data</button>
+</div>
 
     <div class="resources" id="resources">
         <button class="back-btn" onclick="showHome()">← Back</button>
