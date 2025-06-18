@@ -288,6 +288,128 @@
                 <div id="journalThemes"></div>
             </div>
         </div>
+
+        <div class="feature-card glow" onclick="showFeature('puzzle')">
+    <div class="feature-icon bounce">🧩</div>
+    <h3 class="feature-title">Daily Puzzle</h3>
+    <p>Challenge your mind with today's brain-training puzzle.</p>
+    <div class="feature-badge">Play Now →</div>
+</div>
+
+<!-- Add this new section after the resources section but before the success message -->
+
+<div class="daily-puzzle" id="puzzle">
+    <button class="back-btn" onclick="showHome()">← Back</button>
+    <div class="section-header">
+        <h2>Daily Mind Challenge</h2>
+        <p class="section-subtitle">Keep your mind sharp with today's puzzle</p>
+    </div>
+    
+    <div class="puzzle-selector">
+        <div class="puzzle-type-card" onclick="startPuzzle('wordsearch')">
+            <div class="puzzle-icon">🔤</div>
+            <h3>Word Search</h3>
+            <p>Find hidden words about mindfulness</p>
+            <div class="difficulty-badge easy">Easy</div>
+        </div>
+        
+        <div class="puzzle-type-card" onclick="startPuzzle('crossword')">
+            <div class="puzzle-icon">📝</div>
+            <h3>Mini Crossword</h3>
+            <p>Solve clues about mental wellness</p>
+            <div class="difficulty-badge medium">Medium</div>
+        </div>
+        
+        <div class="puzzle-type-card" onclick="startPuzzle('sudoku')">
+            <div class="puzzle-icon">🔢</div>
+            <h3>Sudoku</h3>
+            <p>Logical number puzzle for focus</p>
+            <div class="difficulty-badge hard">Hard</div>
+        </div>
+    </div>
+    
+    <div class="puzzle-container" id="puzzleContainer" style="display: none;">
+        <div class="puzzle-header">
+            <h3 id="puzzleTitle">Word Search</h3>
+            <div class="puzzle-stats">
+                <div class="puzzle-timer">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="puzzleTimer">0:00</span>
+                </div>
+                <div class="puzzle-score">
+                    <span class="score-icon">⭐</span>
+                    <span id="puzzleScore">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Word Search Game -->
+        <div class="word-search-game" id="wordSearchGame" style="display: none;">
+            <div class="word-grid" id="wordGrid"></div>
+            <div class="word-list">
+                <h4>Find these words:</h4>
+                <div id="wordList"></div>
+            </div>
+        </div>
+        
+        <!-- Crossword Game -->
+        <div class="crossword-game" id="crosswordGame" style="display: none;">
+            <div class="crossword-grid" id="crosswordGrid"></div>
+            <div class="crossword-clues">
+                <div class="clues-section">
+                    <h4>Across</h4>
+                    <div id="acrossClues"></div>
+                </div>
+                <div class="clues-section">
+                    <h4>Down</h4>
+                    <div id="downClues"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sudoku Game -->
+        <div class="sudoku-game" id="sudokuGame" style="display: none;">
+            <div class="sudoku-grid" id="sudokuGrid"></div>
+            <div class="sudoku-controls">
+                <div class="number-buttons">
+                    <button class="num-btn" onclick="selectNumber(1)">1</button>
+                    <button class="num-btn" onclick="selectNumber(2)">2</button>
+                    <button class="num-btn" onclick="selectNumber(3)">3</button>
+                    <button class="num-btn" onclick="selectNumber(4)">4</button>
+                    <button class="num-btn" onclick="selectNumber(5)">5</button>
+                    <button class="num-btn" onclick="selectNumber(6)">6</button>
+                    <button class="num-btn" onclick="selectNumber(7)">7</button>
+                    <button class="num-btn" onclick="selectNumber(8)">8</button>
+                    <button class="num-btn" onclick="selectNumber(9)">9</button>
+                    <button class="num-btn erase" onclick="eraseNumber()">⌫</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="puzzle-actions">
+            <button class="btn btn-secondary" onclick="getPuzzleHint()">💡 Hint</button>
+            <button class="btn btn-primary" onclick="checkPuzzle()">Check Answer</button>
+            <button class="btn" onclick="newPuzzle()">New Puzzle</button>
+        </div>
+    </div>
+    
+    <div class="puzzle-complete" id="puzzleComplete" style="display: none;">
+        <div class="complete-icon">🎉</div>
+        <h3>Puzzle Complete!</h3>
+        <p>Great job exercising your mind!</p>
+        <div class="complete-stats">
+            <div class="stat">
+                <span class="stat-label">Time:</span>
+                <span class="stat-value" id="completedTime">0:00</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Score:</span>
+                <span class="stat-value" id="completedScore">0</span>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="showPuzzleSelector()">Play Another</button>
+    </div>
+</div>
         
         <div class="insights-message" id="insightsMessage" style="display: none;">
             <p>📊 No data to display yet!</p>
