@@ -1,5 +1,5 @@
 // MindfulMe - Enhanced Mental Health Companion
-// Main JavaScript Application with Achievement System
+// Complete app.js with all fixes and enhancements
 
 // Data Management
 class MindfulMeApp {
@@ -438,7 +438,7 @@ class MindfulMeApp {
         this.loadRecentEntries();
     }
 
-    // Start breathing exercise
+    // Enhanced Start breathing exercise with visual timer
     startBreathing(type) {
         const container = document.getElementById('breathingContainer');
         const circle = document.getElementById('breathingCircle');
@@ -449,7 +449,7 @@ class MindfulMeApp {
         
         container.style.display = 'block';
         
-        // Hide technique cards
+        // Hide technique cards with animation
         document.querySelector('.breathing-techniques').style.display = 'none';
         
         // Reset counters
@@ -458,53 +458,89 @@ class MindfulMeApp {
         cyclesEl.textContent = '0';
         
         let phases;
+        let totalCycleDuration;
+        
         switch(type) {
             case '478':
                 phases = [
-                    { text: 'Breathe In', duration: 4, action: 'in' },
-                    { text: 'Hold', duration: 7, action: 'hold' },
-                    { text: 'Breathe Out', duration: 8, action: 'out' }
+                    { text: 'Breathe In', duration: 4, action: 'in', color: '#6366f1' },
+                    { text: 'Hold', duration: 7, action: 'hold', color: '#fbbf24' },
+                    { text: 'Breathe Out', duration: 8, action: 'out', color: '#34d399' }
                 ];
                 break;
             case 'box':
                 phases = [
-                    { text: 'Breathe In', duration: 4, action: 'in' },
-                    { text: 'Hold', duration: 4, action: 'hold' },
-                    { text: 'Breathe Out', duration: 4, action: 'out' },
-                    { text: 'Hold', duration: 4, action: 'hold' }
+                    { text: 'Breathe In', duration: 4, action: 'in', color: '#6366f1' },
+                    { text: 'Hold', duration: 4, action: 'hold', color: '#fbbf24' },
+                    { text: 'Breathe Out', duration: 4, action: 'out', color: '#34d399' },
+                    { text: 'Hold Empty', duration: 4, action: 'hold', color: '#ef4444' }
                 ];
                 break;
             case 'calm':
                 phases = [
-                    { text: 'Breathe In', duration: 3, action: 'in' },
-                    { text: 'Breathe Out', duration: 3, action: 'out' }
+                    { text: 'Breathe In', duration: 3, action: 'in', color: '#6366f1' },
+                    { text: 'Breathe Out', duration: 3, action: 'out', color: '#34d399' }
                 ];
                 break;
         }
         
-        const totalDuration = phases.reduce((sum, phase) => sum + phase.duration, 0);
+        totalCycleDuration = phases.reduce((sum, phase) => sum + phase.duration, 0);
         this.sessionStartTime = Date.now();
         let currentPhase = 0;
         let phaseStart = Date.now();
+        let pausedTime = 0;
         
         // Start session timer
         this.updateSessionTimer();
-        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
+        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 100); // Update every 100ms for smooth display
+        
+        // Create visual countdown ring
+        const createCountdownRing = () => {
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'countdown-ring');
+            svg.setAttribute('width', '260');
+            svg.setAttribute('height', '260');
+            svg.innerHTML = `
+                <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(99, 102, 241, 0.1)" stroke-width="8"/>
+                <circle id="progressRing" cx="130" cy="130" r="120" fill="none" stroke="${phases[0].color}" stroke-width="8"
+                        stroke-dasharray="753.6" stroke-dashoffset="0" transform="rotate(-90 130 130)"
+                        style="transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;"/>
+            `;
+            circle.appendChild(svg);
+        };
+        
+        createCountdownRing();
+        const progressRing = document.getElementById('progressRing');
         
         // Animation function
         const animate = () => {
             if (!this.isPaused) {
                 const now = Date.now();
-                const phaseElapsed = (now - phaseStart) / 1000;
-                const totalElapsed = (now - this.sessionStartTime) / 1000;
+                const phaseElapsed = (now - phaseStart - pausedTime) / 1000;
+                const totalElapsed = (now - this.sessionStartTime - pausedTime) / 1000;
                 
-                // Update counter
-                const remaining = Math.ceil(phases[currentPhase].duration - phaseElapsed);
-                counter.textContent = remaining;
+                // Update counter with decimal for smooth countdown
+                const remaining = Math.max(0, phases[currentPhase].duration - phaseElapsed);
+                counter.textContent = remaining.toFixed(1);
                 
-                // Update progress bar
-                const progress = (totalElapsed % totalDuration) / totalDuration * 100;
-                progressBar.style.width = `${progress}%`;
+                // Update circular progress
+                const phaseProgress = phaseElapsed / phases[currentPhase].duration;
+                const ringProgress = 753.6 * (1 - phaseProgress);
+                progressRing.style.strokeDashoffset = ringProgress;
+                
+                // Update linear progress bar
+                const cycleProgress = ((totalElapsed % totalCycleDuration) / totalCycleDuration) * 100;
+                progressBar.style.width = `${cycleProgress}%`;
+                progressBar.style.background = phases[currentPhase].color;
+                
+                // Add pulsing effect during breathing
+                if (phases[currentPhase].action === 'in') {
+                    circle.style.transform = `scale(${1 + phaseProgress * 0.2})`;
+                } else if (phases[currentPhase].action === 'out') {
+                    circle.style.transform = `scale(${1.2 - phaseProgress * 0.2})`;
+                } else {
+                    circle.style.transform = 'scale(1)';
+                }
                 
                 // Check if phase is complete
                 if (phaseElapsed >= phases[currentPhase].duration) {
@@ -514,27 +550,26 @@ class MindfulMeApp {
                     if (currentPhase === 0) {
                         this.cycleCount++;
                         cyclesEl.textContent = this.cycleCount;
+                        
+                        // Celebration effect every 5 cycles
+                        if (this.cycleCount % 5 === 0) {
+                            this.showMilestone(this.cycleCount);
+                        }
                     }
                     
                     phaseStart = now;
+                    pausedTime = 0;
                     
-                    // Update text and animation
+                    // Update text and colors
                     text.textContent = phases[currentPhase].text;
+                    progressRing.style.stroke = phases[currentPhase].color;
                     
-                    // Update breathing animation
-                    circle.classList.remove('breathing-in', 'breathing-out');
-                    circle.style.animation = 'none';
-                    
-                    // Force reflow
-                    void circle.offsetWidth;
-                    
-                    // Add appropriate animation
-                    if (phases[currentPhase].action === 'in') {
-                        circle.style.animation = `breatheIn ${phases[currentPhase].duration}s ease-in-out`;
-                    } else if (phases[currentPhase].action === 'out') {
-                        circle.style.animation = `breatheOut ${phases[currentPhase].duration}s ease-in-out`;
-                    }
+                    // Add haptic feedback simulation (visual pulse)
+                    circle.classList.add('phase-change');
+                    setTimeout(() => circle.classList.remove('phase-change'), 300);
                 }
+            } else {
+                pausedTime += 16; // Account for paused time
             }
             
             this.breathingInterval = requestAnimationFrame(animate);
@@ -542,9 +577,6 @@ class MindfulMeApp {
         
         // Start animation
         text.textContent = phases[0].text;
-        if (phases[0].action === 'in') {
-            circle.style.animation = `breatheIn ${phases[0].duration}s ease-in-out`;
-        }
         animate();
         
         // Track session duration
@@ -561,6 +593,23 @@ class MindfulMeApp {
         
         document.getElementById('sessionTimer').textContent = 
             `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Add milestone celebration
+    showMilestone(cycles) {
+        const milestone = document.createElement('div');
+        milestone.className = 'milestone-popup';
+        milestone.innerHTML = `
+            <div class="milestone-icon">🎉</div>
+            <div class="milestone-text">${cycles} cycles completed!</div>
+        `;
+        document.getElementById('breathingContainer').appendChild(milestone);
+        
+        setTimeout(() => milestone.classList.add('show'), 100);
+        setTimeout(() => {
+            milestone.classList.remove('show');
+            setTimeout(() => milestone.remove(), 500);
+        }, 2000);
     }
 
     // Stop breathing exercise
@@ -592,7 +641,11 @@ class MindfulMeApp {
         // Reset UI
         document.getElementById('breathingContainer').style.display = 'none';
         document.querySelector('.breathing-techniques').style.display = 'grid';
-        document.getElementById('breathingCircle').style.animation = 'none';
+        const circle = document.getElementById('breathingCircle');
+        if (circle) {
+            circle.style.transform = 'scale(1)';
+            circle.innerHTML = '<div class="inner-circle"></div><span class="breathing-text" id="breathingText">Get Ready</span>';
+        }
         document.getElementById('sessionTimer').textContent = '0:00';
         document.getElementById('cyclesCount').textContent = '0';
         
@@ -604,18 +657,22 @@ class MindfulMeApp {
         this.isPaused = false;
     }
 
-    // Update insights
+    // Fixed Update insights method
     updateInsights() {
+        const insightsMessage = document.getElementById('insightsMessage');
+        const insightsGrid = document.querySelector('.insights-grid');
+        const chartSection = document.querySelector('.chart-section');
+        
         // Check if there's any data
-        if (this.data.moods.length === 0 && this.data.journals.length === 0) {
-            document.getElementById('insightsMessage').style.display = 'block';
-            document.querySelector('.insights-grid').style.display = 'none';
-            document.querySelector('.chart-section').style.display = 'none';
+        if (!this.data.moods || this.data.moods.length === 0) {
+            if (insightsMessage) insightsMessage.style.display = 'block';
+            if (insightsGrid) insightsGrid.style.display = 'none';
+            if (chartSection) chartSection.style.display = 'none';
             return;
         } else {
-            document.getElementById('insightsMessage').style.display = 'none';
-            document.querySelector('.insights-grid').style.display = 'grid';
-            document.querySelector('.chart-section').style.display = 'block';
+            if (insightsMessage) insightsMessage.style.display = 'none';
+            if (insightsGrid) insightsGrid.style.display = 'grid';
+            if (chartSection) chartSection.style.display = 'block';
         }
 
         this.updateMoodChart();
@@ -625,108 +682,152 @@ class MindfulMeApp {
         this.updateJournalThemes();
     }
 
-    // Update mood chart
+    // Fixed Update mood chart method
     updateMoodChart() {
         const canvas = document.getElementById('moodChart');
-        if (!canvas) return;
+        if (!canvas) {
+            console.error('Mood chart canvas not found');
+            return;
+        }
         
-        const ctx = canvas.getContext('2d');
-        
-        // Get last 7 days of data
-        const days = [];
-        const moodValues = [];
-        
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toDateString();
+        try {
+            const ctx = canvas.getContext('2d');
             
-            const dayMoods = this.data.moods.filter(mood => 
-                new Date(mood.date).toDateString() === dateStr
-            );
+            // Get last 7 days of data
+            const days = [];
+            const moodValues = [];
+            const moodCounts = [];
             
-            days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
-            
-            if (dayMoods.length > 0) {
-                const avgMood = dayMoods.reduce((sum, mood) => sum + mood.value, 0) / dayMoods.length;
-                moodValues.push(avgMood);
-            } else {
-                moodValues.push(null);
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toDateString();
+                
+                const dayMoods = this.data.moods.filter(mood => {
+                    try {
+                        return new Date(mood.date).toDateString() === dateStr;
+                    } catch (e) {
+                        console.error('Invalid date in mood entry:', mood);
+                        return false;
+                    }
+                });
+                
+                days.push(date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
+                
+                if (dayMoods.length > 0) {
+                    const avgMood = dayMoods.reduce((sum, mood) => sum + (mood.value || 3), 0) / dayMoods.length;
+                    moodValues.push(avgMood);
+                    moodCounts.push(dayMoods.length);
+                } else {
+                    moodValues.push(null);
+                    moodCounts.push(0);
+                }
             }
-        }
-        
-        // Create or update chart
-        if (window.moodChart) {
-            window.moodChart.destroy();
-        }
-        
-        window.moodChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: days,
-                datasets: [{
-                    label: 'Mood Score',
-                    data: moodValues,
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 6,
-                    pointHoverRadius: 8,
-                    pointBackgroundColor: '#6366f1',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    spanGaps: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
+            
+            // Destroy existing chart if it exists
+            if (window.moodChart && typeof window.moodChart.destroy === 'function') {
+                window.moodChart.destroy();
+            }
+            
+            // Create new chart
+            window.moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Average Mood',
+                        data: moodValues,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 8,
+                        pointHoverRadius: 10,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        spanGaps: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
-                                const value = context.parsed.y;
-                                if (value) {
-                                    return `Mood: ${moodEmojis[Math.round(value) - 1]} (${value.toFixed(1)}/5)`;
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#6366f1',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    if (value === null) return 'No data';
+                                    
+                                    const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
+                                    const emoji = moodEmojis[Math.round(value) - 1] || '😐';
+                                    const count = moodCounts[context.dataIndex];
+                                    
+                                    return [
+                                        `Mood: ${emoji} (${value.toFixed(1)}/5)`,
+                                        `Entries: ${count}`
+                                    ];
                                 }
-                                return 'No data';
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0.5,
+                            max: 5.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const moodEmojis = ['', '😢', '😟', '😐', '🙂', '😊'];
+                                    return moodEmojis[value] || '';
+                                },
+                                color: '#cbd5e1',
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#cbd5e1',
+                                font: {
+                                    size: 12
+                                },
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
                             }
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        min: 0,
-                        max: 5,
-                        ticks: {
-                            stepSize: 1,
-                            callback: function(value) {
-                                const moodEmojis = ['', '😢', '😟', '😐', '🙂', '😊'];
-                                return moodEmojis[value] || '';
-                            },
-                            color: '#cbd5e1'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#cbd5e1'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    }
                 }
-            }
-        });
+            });
+        } catch (error) {
+            console.error('Error creating mood chart:', error);
+        }
     }
 
     // Update mood patterns
@@ -895,14 +996,20 @@ document.addEventListener('DOMContentLoaded', () => {
     app = new MindfulMeApp();
     
     // Add event listeners
-    document.getElementById('journalEntry').addEventListener('input', () => app.updateWordCount());
+    const journalEntry = document.getElementById('journalEntry');
+    if (journalEntry) {
+        journalEntry.addEventListener('input', () => app.updateWordCount());
+    }
     
-    document.getElementById('tagInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTag();
-        }
-    });
+    const tagInput = document.getElementById('tagInput');
+    if (tagInput) {
+        tagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag();
+            }
+        });
+    }
 });
 
 // Navigation functions
@@ -925,7 +1032,10 @@ function showFeature(feature) {
 function hideAllSections() {
     const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources'];
     sections.forEach(section => {
-        document.getElementById(section).style.display = 'none';
+        const element = document.getElementById(section);
+        if (element) {
+            element.style.display = 'none';
+        }
     });
 }
 
