@@ -1,5 +1,4 @@
-// MindfulMe - Enhanced Mental Health Companion
-
+// MindfulMe - Complete Mental Health Companion
 
 // Data Management
 class MindfulMeApp {
@@ -30,7 +29,8 @@ class MindfulMeApp {
             nightOwl: { id: 'nightOwl', name: 'Night Owl', description: 'Track mood after 9 PM', icon: '🌙', unlocked: false },
             moodExplorer: { id: 'moodExplorer', name: 'Mood Explorer', description: 'Use all 5 mood options', icon: '🎭', unlocked: false },
             consistentUser: { id: 'consistentUser', name: 'Consistent User', description: 'Use app 3 days in a row', icon: '⭐', unlocked: false },
-            zenMaster: { id: 'zenMaster', name: 'Zen Master', description: '30 minutes of breathing exercises', icon: '🧘', unlocked: false }
+            zenMaster: { id: 'zenMaster', name: 'Zen Master', description: '30 minutes of breathing exercises', icon: '🧘', unlocked: false },
+            puzzleSolver: { id: 'puzzleSolver', name: 'Puzzle Solver', description: 'Complete your first puzzle', icon: '🧩', unlocked: false }
         };
     }
 
@@ -69,6 +69,7 @@ class MindfulMeApp {
             lastVisit: new Date().toDateString(),
             streak: 1,
             usedMoodValues: new Set(),
+            puzzlesCompleted: 0,
             preferences: {
                 reminderTime: null,
                 theme: 'dark'
@@ -153,6 +154,13 @@ class MindfulMeApp {
             this.achievements.consistentUser.unlocked = true;
             newUnlock = true;
             this.showAchievement(this.achievements.consistentUser);
+        }
+
+        // Puzzle solver
+        if (this.data.puzzlesCompleted >= 1 && !this.achievements.puzzleSolver.unlocked) {
+            this.achievements.puzzleSolver.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.puzzleSolver);
         }
 
         if (newUnlock) {
@@ -286,85 +294,48 @@ class MindfulMeApp {
         const weeklyCheckIns = this.data.moods.filter(mood => new Date(mood.date) >= weekAgo).length;
         document.getElementById('weeklyCheckIns').textContent = weeklyCheckIns;
     }
-
-    // Load journal prompt
-    loadJournalPrompt() {
-        const prompts = [
-            "What are three things you're grateful for today?",
-            "Describe a moment today when you felt at peace.",
-            "What challenge did you face today and how did you handle it?",
-            "If today had a color, what would it be and why?",
-            "What's one thing you learned about yourself today?",
-            "How did you show kindness to yourself or others today?",
-            "What would you tell your younger self about today?",
-            "Describe your ideal day. How close was today to it?",
-            "What emotions visited you today? How did you welcome them?",
-            "What's one small victory you achieved today?"
-        ];
-        
-        const promptEl = document.getElementById('journalPrompt');
-        if (promptEl) {
-            const todayPrompt = prompts[new Date().getDate() % prompts.length];
-            promptEl.textContent = `Today's prompt: ${todayPrompt}`;
-        }
-    }
-
-    // Load recent journal entries
-    loadRecentEntries() {
-        const recentEntries = document.getElementById('recentEntries');
-        if (!recentEntries) return;
-        
-        const entries = this.data.journals.slice(-5).reverse();
-        recentEntries.innerHTML = '';
-        
-        if (entries.length === 0) {
-            recentEntries.innerHTML = '<p style="color: var(--text-secondary);">No entries yet. Start journaling to see your history!</p>';
-            return;
-        }
-        
-        entries.forEach(entry => {
-            const entryDiv = document.createElement('div');
-            entryDiv.className = 'journal-entry-item';
-            
-            const date = new Date(entry.date);
-            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            
-            entryDiv.innerHTML = `
-                <div class="entry-date">${dateStr}</div>
-                <div class="entry-preview">${entry.content.substring(0, 150)}...</div>
-                ${entry.tags ? `<div class="tags-container">${entry.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : ''}
-            `;
-            
-            entryDiv.onclick = () => this.viewJournalEntry(entry);
-            recentEntries.appendChild(entryDiv);
+    // Mood tracking methods
+    selectMood(value) {
+        this.currentMood = value;
+        // Update UI
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            btn.classList.remove('selected');
         });
+        event.target.closest('.mood-btn').classList.add('selected');
+        
+        // Show factors section
+        document.querySelector('.mood-factors').style.display = 'block';
     }
 
-    // View full journal entry
-    viewJournalEntry(entry) {
-        const journalEntry = document.getElementById('journalEntry');
-        if (journalEntry) {
-            journalEntry.value = entry.content;
-            this.updateWordCount();
+    // Toggle mood factor
+    toggleFactor(factor) {
+        const index = this.selectedFactors.indexOf(factor);
+        if (index > -1) {
+            this.selectedFactors.splice(index, 1);
+        } else {
+            this.selectedFactors.push(factor);
         }
+        
+        // Update UI
+        event.target.classList.toggle('selected');
     }
 
     // Save mood
     saveMood() {
         if (!this.currentMood) {
-            this.showSuccess('Please select a mood first! 😊', 'warning');
+            alert('Please select a mood first');
             return;
         }
         
-        const note = document.getElementById('moodNote').value;
-        const hour = new Date().getHours();
+        const moodNote = document.getElementById('moodNote').value;
+        const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
         
         const moodEntry = {
-            date: new Date().toISOString(),
-            emoji: this.currentMood.emoji,
-            value: this.currentMood.value,
-            factors: this.selectedFactors,
-            note: note
+            value: this.currentMood,
+            emoji: moodEmojis[this.currentMood - 1],
+            factors: [...this.selectedFactors],
+            note: moodNote,
+            date: new Date().toISOString()
         };
         
         this.data.moods.push(moodEntry);
@@ -373,12 +344,10 @@ class MindfulMeApp {
         if (!this.data.usedMoodValues) {
             this.data.usedMoodValues = new Set();
         }
-        if (this.data.usedMoodValues instanceof Array) {
-            this.data.usedMoodValues = new Set(this.data.usedMoodValues);
-        }
-        this.data.usedMoodValues.add(this.currentMood.value);
+        this.data.usedMoodValues.add(this.currentMood);
         
         // Check time-based achievements
+        const hour = new Date().getHours();
         if (hour < 9 && !this.achievements.earlyBird.unlocked) {
             this.achievements.earlyBird.unlocked = true;
             this.showAchievement(this.achievements.earlyBird);
@@ -393,1244 +362,614 @@ class MindfulMeApp {
         this.checkAchievements();
         
         // Reset form
-        document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
-        document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('selected'));
-        document.getElementById('moodNote').value = '';
         this.currentMood = null;
         this.selectedFactors = [];
+        document.getElementById('moodNote').value = '';
+        document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelectorAll('.factor-chip').forEach(chip => chip.classList.remove('selected'));
+        document.querySelector('.mood-factors').style.display = 'none';
         
-        this.showSuccess('Mood tracked successfully! Keep it up! 🌟');
+        // Show success message
+        const saveBtn = document.querySelector('.save-mood-btn');
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = '✓ Mood Saved!';
+        saveBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
         
-        // Update insights if visible
-        if (document.getElementById('insights').style.display !== 'none') {
-            this.updateInsights();
-        }
+        setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.style.background = '';
+        }, 2000);
     }
 
-    // Save journal entry
-    saveJournal() {
-        const content = document.getElementById('journalEntry').value.trim();
-        
-        if (!content) {
-            this.showSuccess('Please write something first! ✍️', 'warning');
-            return;
-        }
-        
-        const journalEntry = {
-            date: new Date().toISOString(),
-            content: content,
-            tags: this.currentTags,
-            wordCount: content.split(/\s+/).length
+    // Breathing exercise methods
+    startBreathing(technique) {
+        const techniques = {
+            '478': { inhale: 4, hold: 7, exhale: 8, name: '4-7-8 Breathing' },
+            'box': { inhale: 4, hold: 4, exhale: 4, name: 'Box Breathing' },
+            'calm': { inhale: 3, hold: 0, exhale: 6, name: 'Calm Breathing' }
         };
         
-        this.data.journals.push(journalEntry);
-        this.saveData();
-        this.updateStats();
-        this.checkAchievements();
+        const selected = techniques[technique];
+        this.currentTechnique = selected;
+        this.sessionStartTime = Date.now();
+        this.cycleCount = 0;
+        this.isPaused = false;
         
-        // Reset form
-        document.getElementById('journalEntry').value = '';
-        this.currentTags = [];
-        document.getElementById('tagsContainer').innerHTML = '';
-        this.updateWordCount();
+        // Update UI
+        document.querySelector('.breathing-container').innerHTML = `
+            <h3>${selected.name}</h3>
+            <div class="breathing-stats">
+                <div class="breathing-stat">
+                    <span class="stat-label">Cycles</span>
+                    <span class="stat-value" id="cycleCount">0</span>
+                </div>
+                <div class="breathing-stat">
+                    <span class="stat-label">Session Time</span>
+                    <span class="stat-value" id="sessionTime">0:00</span>
+                </div>
+            </div>
+            <div class="breathing-visual">
+                <div class="breathing-circle" id="breathingCircle">
+                    <svg class="progress-ring" width="200" height="200">
+                        <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+                        <circle class="progress-ring-circle" cx="100" cy="100" r="90" />
+                    </svg>
+                    <div class="breathing-inner">
+                        <div class="breathing-text" id="breathingText">Get Ready</div>
+                        <div class="breathing-counter" id="breathingCounter"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="breathing-progress">
+                <div class="breathing-progress-bar" id="breathingProgress"></div>
+            </div>
+            <div class="breathing-controls">
+                <button class="btn btn-secondary" onclick="app.pauseBreathing()" id="pauseBtn">Pause</button>
+                <button class="btn btn-secondary" onclick="app.stopBreathing()">Stop</button>
+            </div>
+        `;
         
-        this.showSuccess('Journal entry saved! Your thoughts are safe. 📔');
-        this.loadRecentEntries();
+        // Start session timer
+        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
+        
+        // Start breathing cycle
+        this.breathingCycle();
     }
 
-    // Enhanced Start breathing exercise with visual timer
-    startBreathing(type) {
-        const container = document.getElementById('breathingContainer');
+    // Update session timer
+    updateSessionTimer() {
+        if (!this.isPaused && this.sessionStartTime) {
+            const elapsed = Math.floor((Date.now() - this.sessionStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('sessionTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }
+
+    // Breathing cycle
+    breathingCycle() {
+        if (this.isPaused) return;
+        
         const circle = document.getElementById('breathingCircle');
         const text = document.getElementById('breathingText');
         const counter = document.getElementById('breathingCounter');
-        const progressBar = document.getElementById('progressBar');
-        const cyclesEl = document.getElementById('cyclesCount');
+        const progress = document.getElementById('breathingProgress');
+        const progressCircle = document.querySelector('.progress-ring-circle');
         
-        container.style.display = 'block';
+        const phases = [
+            { 
+                text: 'Breathe In', 
+                duration: this.currentTechnique.inhale * 1000, 
+                class: 'breathing-in',
+                color: '#6366f1'
+            },
+            { 
+                text: 'Hold', 
+                duration: this.currentTechnique.hold * 1000, 
+                class: 'breathing-hold',
+                color: '#eab308'
+            },
+            { 
+                text: 'Breathe Out', 
+                duration: this.currentTechnique.exhale * 1000, 
+                class: 'breathing-out',
+                color: '#10b981'
+            }
+        ];
         
-        // Hide technique cards with animation
-        document.querySelector('.breathing-techniques').style.display = 'none';
-        
-        // Reset counters
-        this.cycleCount = 0;
-        this.isPaused = false;
-        cyclesEl.textContent = '0';
-        
-        let phases;
-        let totalCycleDuration;
-        
-        switch(type) {
-            case '478':
-                phases = [
-                    { text: 'Breathe In', duration: 4, action: 'in', color: '#6366f1' },
-                    { text: 'Hold', duration: 7, action: 'hold', color: '#fbbf24' },
-                    { text: 'Breathe Out', duration: 8, action: 'out', color: '#34d399' }
-                ];
-                break;
-            case 'box':
-                phases = [
-                    { text: 'Breathe In', duration: 4, action: 'in', color: '#6366f1' },
-                    { text: 'Hold', duration: 4, action: 'hold', color: '#fbbf24' },
-                    { text: 'Breathe Out', duration: 4, action: 'out', color: '#34d399' },
-                    { text: 'Hold Empty', duration: 4, action: 'hold', color: '#ef4444' }
-                ];
-                break;
-            case 'calm':
-                phases = [
-                    { text: 'Breathe In', duration: 3, action: 'in', color: '#6366f1' },
-                    { text: 'Breathe Out', duration: 3, action: 'out', color: '#34d399' }
-                ];
-                break;
+        if (this.currentTechnique.hold === 0) {
+            phases.splice(1, 1); // Remove hold phase for calm breathing
         }
         
-        totalCycleDuration = phases.reduce((sum, phase) => sum + phase.duration, 0);
-        this.sessionStartTime = Date.now();
-        let currentPhase = 0;
-        let phaseStart = Date.now();
-        let pausedTime = 0;
+        let phaseIndex = 0;
         
-        // Start session timer
-        this.updateSessionTimer();
-        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 100); // Update every 100ms for smooth display
-        
-        // Create visual countdown ring
-        const createCountdownRing = () => {
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('class', 'countdown-ring');
-            svg.setAttribute('width', '260');
-            svg.setAttribute('height', '260');
-            svg.innerHTML = `
-                <circle cx="130" cy="130" r="120" fill="none" stroke="rgba(99, 102, 241, 0.1)" stroke-width="8"/>
-                <circle id="progressRing" cx="130" cy="130" r="120" fill="none" stroke="${phases[0].color}" stroke-width="8"
-                        stroke-dasharray="753.6" stroke-dashoffset="0" transform="rotate(-90 130 130)"
-                        style="transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;"/>
-            `;
-            circle.appendChild(svg);
-        };
-        
-        createCountdownRing();
-        const progressRing = document.getElementById('progressRing');
-        
-        // Animation function
-        const animate = () => {
-            if (!this.isPaused) {
-                const now = Date.now();
-                const phaseElapsed = (now - phaseStart - pausedTime) / 1000;
-                const totalElapsed = (now - this.sessionStartTime - pausedTime) / 1000;
+        const runPhase = () => {
+            if (this.isPaused) return;
+            
+            const phase = phases[phaseIndex];
+            circle.className = 'breathing-circle ' + phase.class;
+            text.textContent = phase.text;
+            progress.style.background = phase.color;
+            
+            // Animate progress circle
+            const circumference = 2 * Math.PI * 90;
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.stroke = phase.color;
+            
+            let timeLeft = phase.duration / 1000;
+            counter.textContent = timeLeft.toFixed(1);
+            
+            // Smooth countdown
+            progressCircle.style.strokeDashoffset = 0;
+            progressCircle.style.transition = 'none';
+            setTimeout(() => {
+                progressCircle.style.transition = `stroke-dashoffset ${phase.duration}ms linear`;
+                progressCircle.style.strokeDashoffset = circumference;
+            }, 50);
+            
+            this.breathingTimer = setInterval(() => {
+                if (this.isPaused) return;
                 
-                // Update counter with decimal for smooth countdown
-                const remaining = Math.max(0, phases[currentPhase].duration - phaseElapsed);
-                counter.textContent = remaining.toFixed(1);
-                
-                // Update circular progress
-                const phaseProgress = phaseElapsed / phases[currentPhase].duration;
-                const ringProgress = 753.6 * (1 - phaseProgress);
-                progressRing.style.strokeDashoffset = ringProgress;
-                
-                // Update linear progress bar
-                const cycleProgress = ((totalElapsed % totalCycleDuration) / totalCycleDuration) * 100;
-                progressBar.style.width = `${cycleProgress}%`;
-                progressBar.style.background = phases[currentPhase].color;
-                
-                // Add pulsing effect during breathing
-                if (phases[currentPhase].action === 'in') {
-                    circle.style.transform = `scale(${1 + phaseProgress * 0.2})`;
-                } else if (phases[currentPhase].action === 'out') {
-                    circle.style.transform = `scale(${1.2 - phaseProgress * 0.2})`;
-                } else {
-                    circle.style.transform = 'scale(1)';
-                }
-                
-                // Check if phase is complete
-                if (phaseElapsed >= phases[currentPhase].duration) {
-                    currentPhase = (currentPhase + 1) % phases.length;
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    clearInterval(this.breathingTimer);
                     
-                    // Increment cycle count when completing a full cycle
-                    if (currentPhase === 0) {
+                    phaseIndex++;
+                    if (phaseIndex >= phases.length) {
+                        phaseIndex = 0;
                         this.cycleCount++;
-                        cyclesEl.textContent = this.cycleCount;
+                        document.getElementById('cycleCount').textContent = this.cycleCount;
                         
-                        // Celebration effect every 5 cycles
+                        // Check for milestone
                         if (this.cycleCount % 5 === 0) {
                             this.showMilestone(this.cycleCount);
                         }
                     }
                     
-                    phaseStart = now;
-                    pausedTime = 0;
-                    
-                    // Update text and colors
-                    text.textContent = phases[currentPhase].text;
-                    progressRing.style.stroke = phases[currentPhase].color;
-                    
-                    // Add haptic feedback simulation (visual pulse)
-                    circle.classList.add('phase-change');
-                    setTimeout(() => circle.classList.remove('phase-change'), 300);
+                    // Add small pause between phases
+                    setTimeout(() => {
+                        if (!this.isPaused) {
+                            runPhase();
+                        }
+                    }, 200);
+                } else {
+                    counter.textContent = timeLeft.toFixed(1);
                 }
-            } else {
-                pausedTime += 16; // Account for paused time
-            }
-            
-            this.breathingInterval = requestAnimationFrame(animate);
+            }, 100);
         };
         
-        // Start animation
-        text.textContent = phases[0].text;
-        animate();
-        
-        // Track session duration
-        this.breathingTimer = this.sessionStartTime;
+        runPhase();
     }
 
-    // Add session timer update method
-    updateSessionTimer() {
-        if (!this.sessionStartTime || this.isPaused) return;
-        
-        const elapsed = Math.floor((Date.now() - this.sessionStartTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-        
-        document.getElementById('sessionTimer').textContent = 
-            `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    // Add milestone celebration
+    // Show milestone popup
     showMilestone(cycles) {
-        const milestone = document.createElement('div');
-        milestone.className = 'milestone-popup';
-        milestone.innerHTML = `
-            <div class="milestone-icon">🎉</div>
-            <div class="milestone-text">${cycles} cycles completed!</div>
+        const popup = document.createElement('div');
+        popup.className = 'milestone-popup';
+        popup.innerHTML = `
+            <div class="milestone-content">
+                <div class="milestone-icon">🎉</div>
+                <div class="milestone-text">Amazing! ${cycles} cycles completed!</div>
+            </div>
         `;
-        document.getElementById('breathingContainer').appendChild(milestone);
+        document.body.appendChild(popup);
         
-        setTimeout(() => milestone.classList.add('show'), 100);
+        setTimeout(() => popup.classList.add('show'), 100);
         setTimeout(() => {
-            milestone.classList.remove('show');
-            setTimeout(() => milestone.remove(), 500);
+            popup.classList.remove('show');
+            setTimeout(() => popup.remove(), 500);
         }, 2000);
+    }
+
+    // Pause breathing
+    pauseBreathing() {
+        this.isPaused = !this.isPaused;
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+        
+        if (!this.isPaused) {
+            this.breathingCycle();
+        }
     }
 
     // Stop breathing exercise
     stopBreathing() {
-        if (this.breathingInterval) {
-            cancelAnimationFrame(this.breathingInterval);
-            this.breathingInterval = null;
-        }
+        clearInterval(this.breathingTimer);
+        clearInterval(this.sessionTimer);
         
-        // Clear session timer
-        if (this.sessionTimer) {
-            clearInterval(this.sessionTimer);
-            this.sessionTimer = null;
-        }
-        
-        // Save session
-        if (this.breathingTimer) {
-            const duration = Math.floor((Date.now() - this.breathingTimer) / 1000);
+        if (this.sessionStartTime) {
+            const duration = Math.floor((Date.now() - this.sessionStartTime) / 1000);
             this.data.breathingSessions.push({
-                date: new Date().toISOString(),
+                technique: this.currentTechnique.name,
                 duration: duration,
-                cycles: this.cycleCount
+                cycles: this.cycleCount,
+                date: new Date().toISOString()
             });
             this.saveData();
             this.updateStats();
             this.checkAchievements();
         }
         
-        // Reset UI
-        document.getElementById('breathingContainer').style.display = 'none';
-        document.querySelector('.breathing-techniques').style.display = 'grid';
-        const circle = document.getElementById('breathingCircle');
-        if (circle) {
-            circle.style.transform = 'scale(1)';
-            circle.innerHTML = '<div class="inner-circle"></div><span class="breathing-text" id="breathingText">Get Ready</span>';
-        }
-        document.getElementById('sessionTimer').textContent = '0:00';
-        document.getElementById('cyclesCount').textContent = '0';
-        
-        this.showSuccess(`Great session! ${this.cycleCount} cycles completed. 🌊`);
-        
-        // Reset variables
-        this.sessionStartTime = null;
-        this.cycleCount = 0;
-        this.isPaused = false;
+        document.querySelector('.breathing-container').innerHTML = `
+            <p>Great job! You completed ${this.cycleCount} cycles.</p>
+            <button class="btn btn-primary" onclick="showPage('home')">Back to Home</button>
+        `;
     }
 
-    // Fixed Update insights method
-    updateInsights() {
-        const insightsMessage = document.getElementById('insightsMessage');
-        const insightsGrid = document.querySelector('.insights-grid');
-        const chartSection = document.querySelector('.chart-section');
+    // Journal methods
+    loadJournalPrompt() {
+        const prompts = [
+            "What are three things you're grateful for today?",
+            "Describe a moment today that made you smile.",
+            "What's one thing you learned about yourself recently?",
+            "If today had a color, what would it be and why?",
+            "What's something you're looking forward to?",
+            "Describe how you're feeling right now in detail.",
+            "What would you tell your younger self today?",
+            "What small victory did you achieve today?",
+            "What's been on your mind lately?",
+            "How have you grown in the past month?"
+        ];
         
-        // Check if there's any data
-        if (!this.data.moods || this.data.moods.length === 0) {
-            if (insightsMessage) insightsMessage.style.display = 'block';
-            if (insightsGrid) insightsGrid.style.display = 'none';
-            if (chartSection) chartSection.style.display = 'none';
+        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+        document.getElementById('journalPrompt').textContent = randomPrompt;
+    }
+
+    // Add journal tag
+    addTag(tag) {
+        if (!this.currentTags.includes(tag)) {
+            this.currentTags.push(tag);
+            this.updateTagDisplay();
+        }
+    }
+
+    // Update tag display
+    updateTagDisplay() {
+        const container = document.getElementById('selectedTags');
+        container.innerHTML = this.currentTags.map(tag => `
+            <span class="selected-tag">
+                ${tag}
+                <span onclick="app.removeTag('${tag}')">&times;</span>
+            </span>
+        `).join('');
+    }
+
+    // Remove tag
+    removeTag(tag) {
+        this.currentTags = this.currentTags.filter(t => t !== tag);
+        this.updateTagDisplay();
+    }
+
+    // Update journal word count
+    updateWordCount() {
+        const content = document.getElementById('journalContent').value;
+        const wordCount = content.trim().split(/\s+/).length;
+        document.getElementById('wordCount').textContent = content.trim() === '' ? 0 : wordCount;
+    }
+
+    // Save journal entry
+    saveJournal() {
+        const content = document.getElementById('journalContent').value.trim();
+        if (!content) {
+            alert('Please write something before saving');
             return;
-        } else {
-            if (insightsMessage) insightsMessage.style.display = 'none';
-            if (insightsGrid) insightsGrid.style.display = 'grid';
-            if (chartSection) chartSection.style.display = 'block';
         }
-
-        this.updateMoodChart();
-        this.updateMoodPatterns();
-        this.updateTopFactors();
-        this.updateWeeklySummary();
-        this.updateJournalThemes();
+        
+        const entry = {
+            content: content,
+            tags: [...this.currentTags],
+            wordCount: content.split(/\s+/).length,
+            date: new Date().toISOString()
+        };
+        
+        this.data.journals.push(entry);
+        this.saveData();
+        this.updateStats();
+        this.checkAchievements();
+        
+        // Reset form
+        document.getElementById('journalContent').value = '';
+        this.currentTags = [];
+        this.updateTagDisplay();
+        this.updateWordCount();
+        this.loadJournalPrompt();
+        this.loadRecentEntries();
+        
+        // Show success
+        const saveBtn = document.querySelector('.save-journal-btn');
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = '✓ Entry Saved!';
+        saveBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        
+        setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.style.background = '';
+        }, 2000);
     }
 
-    // Fixed Update mood chart method
+    // Load recent journal entries
+    loadRecentEntries() {
+        const container = document.getElementById('recentEntries');
+        const recent = this.data.journals.slice(-3).reverse();
+        
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="no-entries">No journal entries yet. Start writing!</p>';
+            return;
+        }
+        
+        container.innerHTML = recent.map(entry => {
+            const date = new Date(entry.date);
+            const preview = entry.content.substring(0, 100) + (entry.content.length > 100 ? '...' : '');
+            
+            return `
+                <div class="recent-entry">
+                    <div class="entry-date">${date.toLocaleDateString()}</div>
+                    <div class="entry-preview">${preview}</div>
+                    <div class="entry-tags">
+                        ${entry.tags.map(tag => `<span class="entry-tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Insights methods
+    updateInsights() {
+        const container = document.getElementById('insightsContent');
+        
+        if (this.data.moods.length === 0) {
+            container.innerHTML = `
+                <div class="no-data-message">
+                    <div class="no-data-icon">📊</div>
+                    <h3>No mood data yet</h3>
+                    <p>Start tracking your moods to see insights and patterns!</p>
+                    <button class="btn btn-primary" onclick="showPage('mood')">
+                        <i class="fas fa-plus"></i> Track Your First Mood
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        // Get last 7 days of data
+        const last7Days = this.getLast7DaysMoods();
+        
+        // Calculate average mood
+        const avgMood = last7Days.reduce((sum, day) => sum + day.average, 0) / last7Days.length;
+        const moodTrend = this.calculateMoodTrend(last7Days);
+        
+        // Get most common factors
+        const factorCounts = {};
+        this.data.moods.forEach(mood => {
+            mood.factors.forEach(factor => {
+                factorCounts[factor] = (factorCounts[factor] || 0) + 1;
+            });
+        });
+        
+        const topFactors = Object.entries(factorCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
+        
+        // Count journal themes
+        const tagCounts = {};
+        this.data.journals.forEach(entry => {
+            entry.tags.forEach(tag => {
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+            });
+        });
+        
+        container.innerHTML = `
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-icon">📊</div>
+                    <h4>Average Mood</h4>
+                    <div class="insight-value">${avgMood.toFixed(1)}/5</div>
+                    <div class="insight-trend ${moodTrend > 0 ? 'positive' : moodTrend < 0 ? 'negative' : ''}">
+                        ${moodTrend > 0 ? '↑' : moodTrend < 0 ? '↓' : '→'} ${Math.abs(moodTrend)}%
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">🎯</div>
+                    <h4>Top Mood Factors</h4>
+                    <div class="factor-list">
+                        ${topFactors.map(([factor, count]) => `
+                            <div class="factor-item">
+                                <span>${this.getFactorIcon(factor)} ${factor}</span>
+                                <span class="factor-count">${count}x</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">📈</div>
+                    <h4>Weekly Summary</h4>
+                    <div class="summary-stats">
+                        <div>Check-ins: ${last7Days.reduce((sum, day) => sum + day.count, 0)}</div>
+                        <div>Best Day: ${this.getBestDay(last7Days)}</div>
+                        <div>Consistency: ${this.getConsistencyScore()}%</div>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">📝</div>
+                    <h4>Journal Themes</h4>
+                    <div class="theme-cloud">
+                        ${Object.entries(tagCounts).slice(0, 5).map(([tag, count]) => `
+                            <span class="theme-tag" style="font-size: ${1 + (count * 0.2)}rem">${tag}</span>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mood-chart-container">
+                <h4>7-Day Mood Trend</h4>
+                <canvas id="moodChart"></canvas>
+            </div>
+        `;
+        
+        // Initialize chart
+        this.updateMoodChart();
+    }
+
+    // Get last 7 days moods
+    getLast7DaysMoods() {
+        const days = [];
+        const today = new Date();
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toDateString();
+            
+            const dayMoods = this.data.moods.filter(mood => 
+                new Date(mood.date).toDateString() === dateStr
+            );
+            
+            days.push({
+                date: date,
+                moods: dayMoods,
+                average: dayMoods.length > 0 
+                    ? dayMoods.reduce((sum, m) => sum + m.value, 0) / dayMoods.length 
+                    : 0,
+                count: dayMoods.length
+            });
+        }
+        
+        return days;
+    }
+
+    // Calculate mood trend
+    calculateMoodTrend(days) {
+        const firstHalf = days.slice(0, 3);
+        const secondHalf = days.slice(4, 7);
+        
+        const firstAvg = firstHalf.reduce((sum, d) => sum + d.average, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, d) => sum + d.average, 0) / secondHalf.length;
+        
+        return Math.round(((secondAvg - firstAvg) / firstAvg) * 100);
+    }
+
+    // Get best day
+    getBestDay(days) {
+        const bestDay = days.reduce((best, day) => 
+            day.average > best.average ? day : best
+        );
+        return bestDay.date.toLocaleDateString('en-US', { weekday: 'short' });
+    }
+
+    // Get consistency score
+    getConsistencyScore() {
+        const last7Days = new Date();
+        last7Days.setDate(last7Days.getDate() - 7);
+        
+        const daysWithEntries = new Set();
+        this.data.moods.forEach(mood => {
+            const moodDate = new Date(mood.date);
+            if (moodDate >= last7Days) {
+                daysWithEntries.add(moodDate.toDateString());
+            }
+        });
+        
+        return Math.round((daysWithEntries.size / 7) * 100);
+    }
+
+    // Get factor icon
+    getFactorIcon(factor) {
+        const icons = {
+            'Sleep': '😴',
+            'Exercise': '🏃',
+            'Diet': '🥗',
+            'Social': '👥',
+            'Work': '💼',
+            'Weather': '☀️',
+            'Health': '❤️',
+            'Stress': '😰'
+        };
+        return icons[factor] || '📌';
+    }
+
+    // Update mood chart
     updateMoodChart() {
         const canvas = document.getElementById('moodChart');
-        if (!canvas) {
-            console.error('Mood chart canvas not found');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const last7Days = this.getLast7DaysMoods();
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded');
+            canvas.parentElement.innerHTML = '<p>Chart loading error. Please refresh.</p>';
             return;
+        }
+        
+        // Destroy existing chart if any
+        if (window.moodChartInstance) {
+            window.moodChartInstance.destroy();
         }
         
         try {
-            const ctx = canvas.getContext('2d');
-            
-            // Get last 7 days of data
-            const days = [];
-            const moodValues = [];
-            const moodCounts = [];
-            
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toDateString();
-                
-                const dayMoods = this.data.moods.filter(mood => {
-                    try {
-                        return new Date(mood.date).toDateString() === dateStr;
-                    } catch (e) {
-                        console.error('Invalid date in mood entry:', mood);
-                        return false;
-                    }
-                });
-                
-                days.push(date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
-                
-                if (dayMoods.length > 0) {
-                    const avgMood = dayMoods.reduce((sum, mood) => sum + (mood.value || 3), 0) / dayMoods.length;
-                    moodValues.push(avgMood);
-                    moodCounts.push(dayMoods.length);
-                } else {
-                    moodValues.push(null);
-                    moodCounts.push(0);
-                }
-            }
-            
-            // Destroy existing chart if it exists
-            if (window.moodChart && typeof window.moodChart.destroy === 'function') {
-                window.moodChart.destroy();
-            }
-            
-            // Create new chart
-            window.moodChart = new Chart(ctx, {
+            window.moodChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: days,
+                    labels: last7Days.map(d => d.date.toLocaleDateString('en-US', { weekday: 'short' })),
                     datasets: [{
                         label: 'Average Mood',
-                        data: moodValues,
+                        data: last7Days.map(d => d.average || null),
                         borderColor: '#6366f1',
                         backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
                         tension: 0.4,
-                        fill: true,
-                        pointRadius: 8,
-                        pointHoverRadius: 10,
+                        pointRadius: 5,
                         pointBackgroundColor: '#6366f1',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 3,
-                        spanGaps: true
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
                     plugins: {
                         legend: {
                             display: false
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#cbd5e1',
-                            borderColor: '#6366f1',
-                            borderWidth: 1,
-                            padding: 12,
-                            cornerRadius: 8,
                             callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
-                                },
                                 label: function(context) {
-                                    const value = context.parsed.y;
-                                    if (value === null) return 'No data';
-                                    
-                                    const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
-                                    const emoji = moodEmojis[Math.round(value) - 1] || '😐';
-                                    const count = moodCounts[context.dataIndex];
-                                    
-                                    return [
-                                        `Mood: ${emoji} (${value.toFixed(1)}/5)`,
-                                        `Entries: ${count}`
-                                    ];
+                                    const dayData = last7Days[context.dataIndex];
+                                    return `Mood: ${context.parsed.y.toFixed(1)} (${dayData.count} entries)`;
                                 }
                             }
                         }
                     },
                     scales: {
                         y: {
-                            min: 0.5,
-                            max: 5.5,
+                            beginAtZero: true,
+                            max: 5,
                             ticks: {
                                 stepSize: 1,
                                 callback: function(value) {
-                                    const moodEmojis = ['', '😢', '😟', '😐', '🙂', '😊'];
-                                    return moodEmojis[value] || '';
-                                },
-                                color: '#cbd5e1',
-                                font: {
-                                    size: 16
+                                    const emojis = ['', '😢', '😟', '😐', '🙂', '😊'];
+                                    return emojis[value] || value;
                                 }
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.05)',
-                                drawBorder: false
+                                color: 'rgba(99, 102, 241, 0.1)'
                             }
                         },
                         x: {
-                            ticks: {
-                                color: '#cbd5e1',
-                                font: {
-                                    size: 12
-                                },
-                                maxRotation: 45,
-                                minRotation: 45
-                            },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.05)',
-                                drawBorder: false
+                                color: 'rgba(99, 102, 241, 0.1)'
                             }
                         }
                     }
                 }
             });
         } catch (error) {
-            console.error('Error creating mood chart:', error);
+            console.error('Chart initialization error:', error);
+            canvas.parentElement.innerHTML = '<p>Unable to display chart. Please try again.</p>';
         }
     }
 
-    // Update mood patterns
-    updateMoodPatterns() {
-        const patternsDiv = document.getElementById('moodPatterns');
-        
-        if (this.data.moods.length === 0) {
-            patternsDiv.innerHTML = '<p class="insight-item">No mood data yet</p>';
-            return;
-        }
-        
-        // Calculate patterns
-        const timeOfDay = { morning: 0, afternoon: 0, evening: 0, night: 0 };
-        const dayOfWeek = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
-        
-        this.data.moods.forEach(mood => {
-            const date = new Date(mood.date);
-            const hour = date.getHours();
-            
-            if (hour < 6) timeOfDay.night++;
-            else if (hour < 12) timeOfDay.morning++;
-            else if (hour < 18) timeOfDay.afternoon++;
-            else timeOfDay.evening++;
-            
-            const day = date.toLocaleDateString('en-US', { weekday: 'short' });
-            dayOfWeek[day]++;
-        });
-        
-        // Find best time and day
-        const bestTime = Object.entries(timeOfDay).sort((a, b) => b[1] - a[1])[0][0];
-        const bestDay = Object.entries(dayOfWeek).sort((a, b) => b[1] - a[1])[0][0];
-        
-        patternsDiv.innerHTML = `
-            <p class="insight-item">📅 Most active day: <strong>${bestDay}</strong></p>
-            <p class="insight-item">🕐 Most active time: <strong>${bestTime}</strong></p>
-            <p class="insight-item">📊 Total check-ins: <strong>${this.data.moods.length}</strong></p>
-        `;
-    }
-
-    // Update top factors
-    updateTopFactors() {
-        const factorsDiv = document.getElementById('topFactors');
-        
-        const factorCounts = {};
-        this.data.moods.forEach(mood => {
-            if (mood.factors) {
-                mood.factors.forEach(factor => {
-                    factorCounts[factor] = (factorCounts[factor] || 0) + 1;
-                });
-            }
-        });
-        
-        const sortedFactors = Object.entries(factorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        
-        if (sortedFactors.length === 0) {
-            factorsDiv.innerHTML = '<p class="insight-item">No mood factors tracked yet</p>';
-            return;
-        }
-        
-        factorsDiv.innerHTML = sortedFactors.map(([factor, count]) => `
-            <div class="factor-bar">
-                <span class="factor-name">${factor}</span>
-                <span class="factor-count">${count}</span>
-            </div>
-        `).join('');
-    }
-
-    // Update weekly summary
-    updateWeeklySummary() {
-        const summaryDiv = document.getElementById('weeklySummary');
-        
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        
-        const weekMoods = this.data.moods.filter(mood => new Date(mood.date) >= weekAgo);
-        const weekJournals = this.data.journals.filter(journal => new Date(journal.date) >= weekAgo);
-        const weekBreathing = this.data.breathingSessions.filter(session => new Date(session.date) >= weekAgo);
-        
-        const avgMood = weekMoods.length > 0 
-            ? (weekMoods.reduce((sum, mood) => sum + mood.value, 0) / weekMoods.length).toFixed(1)
-            : 'N/A';
-        
-        const totalBreathingMins = Math.floor(weekBreathing.reduce((sum, session) => sum + session.duration, 0) / 60);
-        
-        summaryDiv.innerHTML = `
-            <p class="insight-item">📊 Mood checks: <strong>${weekMoods.length}</strong></p>
-            <p class="insight-item">📝 Journal entries: <strong>${weekJournals.length}</strong></p>
-            <p class="insight-item">🌬️ Breathing minutes: <strong>${totalBreathingMins}</strong></p>
-            <p class="insight-item">😊 Average mood: <strong>${avgMood}/5</strong></p>
-        `;
-    }
-
-    // Update journal themes
-    updateJournalThemes() {
-        const themesDiv = document.getElementById('journalThemes');
-        
-        const allTags = {};
-        this.data.journals.forEach(journal => {
-            if (journal.tags) {
-                journal.tags.forEach(tag => {
-                    allTags[tag] = (allTags[tag] || 0) + 1;
-                });
-            }
-        });
-        
-        const sortedTags = Object.entries(allTags).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        
-        if (sortedTags.length === 0) {
-            themesDiv.innerHTML = '<p class="insight-item">No journal tags yet</p>';
-            return;
-        }
-        
-        themesDiv.innerHTML = sortedTags.map(([tag, count]) => `
-            <div class="factor-bar">
-                <span class="factor-name">#${tag}</span>
-                <span class="factor-count">${count}</span>
-            </div>
-        `).join('');
-    }
-
-    // Export data
-    exportData() {
-        const dataStr = JSON.stringify(this.data, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `mindfulme_export_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        
-        this.showSuccess('Data exported successfully! 📁');
-    }
-
-    // Show success message
-    showSuccess(message, type = 'success') {
-        const successMsg = document.getElementById('successMessage');
-        successMsg.textContent = message;
-        
-        if (type === 'warning') {
-            successMsg.style.background = 'var(--accent)';
-        } else {
-            successMsg.style.background = 'var(--success)';
-        }
-        
-        successMsg.classList.add('show');
-        setTimeout(() => successMsg.classList.remove('show'), 3000);
-    }
-
-    // Update word count
-    updateWordCount() {
-        const content = document.getElementById('journalEntry').value;
-        const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
-        document.getElementById('wordCount').textContent = `${wordCount} words`;
-    }
-}
-
-// Global app instance
-let app;
-
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    app = new MindfulMeApp();
     
-    // Add event listeners
-    const journalEntry = document.getElementById('journalEntry');
-    if (journalEntry) {
-        journalEntry.addEventListener('input', () => app.updateWordCount());
-    }
-    
-    const tagInput = document.getElementById('tagInput');
-    if (tagInput) {
-        tagInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addTag();
-            }
-        });
-    }
-});
-
-// Navigation functions
-function showHome() {
-    hideAllSections();
-    document.getElementById('home').style.display = 'block';
-    app.updateStats();
-    app.displayAchievements();
-}
-
-function showFeature(feature) {
-    hideAllSections();
-    document.getElementById(feature).style.display = 'block';
-    
-    if (feature === 'insights') {
-        app.updateInsights();
-    }
-}
-
-function hideAllSections() {
-    const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources'];
-    sections.forEach(section => {
-        const element = document.getElementById(section);
-        if (element) {
-            element.style.display = 'none';
-        }
-    });
-}
-
-// Mobile menu toggle
-function toggleMobileMenu() {
-    const mobileMenu = document.getElementById('mobileMenu');
-    mobileMenu.classList.toggle('active');
-}
-
-// Mood tracking functions
-function selectMood(btn, emoji, value) {
-    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    app.currentMood = { emoji, value };
-}
-
-function toggleChip(chip) {
-    chip.classList.toggle('selected');
-    const factor = chip.textContent.trim();
-    
-    if (chip.classList.contains('selected')) {
-        app.selectedFactors.push(factor);
-    } else {
-        app.selectedFactors = app.selectedFactors.filter(f => f !== factor);
-    }
-}
-
-function saveMood() {
-    app.saveMood();
-}
-
-// Breathing functions
-function startBreathing(type) {
-    app.startBreathing(type);
-}
-
-function stopBreathing() {
-    app.stopBreathing();
-}
-
-// Add pause/resume functionality
-function pauseBreathing() {
-    const pauseBtn = document.getElementById('pauseBtn');
-    if (app.isPaused) {
-        app.isPaused = false;
-        pauseBtn.textContent = 'Pause';
-        app.sessionStartTime = Date.now(); // Reset timer
-    } else {
-        app.isPaused = true;
-        pauseBtn.textContent = 'Resume';
-    }
-}
-
-// Journal functions
-function saveJournal() {
-    app.saveJournal();
-}
-
-function addTag() {
-    const input = document.getElementById('tagInput');
-    const tag = input.value.trim();
-    
-    if (tag && !app.currentTags.includes(tag)) {
-        app.currentTags.push(tag);
-        
-        const tagEl = document.createElement('span');
-        tagEl.className = 'tag';
-        tagEl.innerHTML = `${tag} <span class="remove-tag" onclick="removeTag('${tag}')">×</span>`;
-        
-        document.getElementById('tagsContainer').appendChild(tagEl);
-        input.value = '';
-    }
-}
-
-function removeTag(tag) {
-    app.currentTags = app.currentTags.filter(t => t !== tag);
-    
-    const tagsContainer = document.getElementById('tagsContainer');
-    const tags = tagsContainer.querySelectorAll('.tag');
-    tags.forEach(tagEl => {
-        if (tagEl.textContent.includes(tag)) {
-            tagEl.remove();
-        }
-    });
-}
-
-// Export data function
-function exportData() {
-    app.exportData();
-}
-
-const crosswordPuzzles = [
-    {
-        grid: [
-            ['C','A','L','M','',  '','','','',''],
-            ['','','O','','',  '','','','',''],
-            ['','','V','','',  'P','E','A','C','E'],
-            ['','','E','','',  '','','','',''],
-            ['H','O','P','E','',  '','','','','']
-        ],
-        clues: {
-            across: {
-                '1': 'Peaceful state of mind (4)',
-                '3': 'Tranquility and harmony (5)',
-                '5': 'Optimistic feeling (4)'
-            },
-            down: {
-                '1': 'Affection and care (4)'
-            }
-        }
-    }
-];
-
-// Initialize puzzle in the showFeature function
-function initializePuzzle() {
-    if (!document.getElementById('puzzle')) return;
-    
-    // Add puzzle to navigation sections
-    const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources', 'puzzle'];
-    
-    // Show puzzle selector by default
-    showPuzzleSelector();
-}
-
-// Show puzzle selector
-function showPuzzleSelector() {
-    document.querySelector('.puzzle-selector').style.display = 'grid';
-    document.getElementById('puzzleContainer').style.display = 'none';
-    document.getElementById('puzzleComplete').style.display = 'none';
-    
-    // Reset timer
-    if (puzzleTimer) {
-        clearInterval(puzzleTimer);
-        puzzleTimer = null;
-    }
-}
-
-// Start a puzzle
-function startPuzzle(type) {
-    currentPuzzleType = type;
-    puzzleScore = 0;
-    puzzleStartTime = Date.now();
-    
-    // Hide selector, show container
-    document.querySelector('.puzzle-selector').style.display = 'none';
-    document.getElementById('puzzleContainer').style.display = 'block';
-    
-    // Hide all games
-    document.getElementById('wordSearchGame').style.display = 'none';
-    document.getElementById('crosswordGame').style.display = 'none';
-    document.getElementById('sudokuGame').style.display = 'none';
-    
-    // Start timer
-    startPuzzleTimer();
-    
-    // Initialize selected puzzle
-    switch(type) {
-        case 'wordsearch':
-            initWordSearch();
-            break;
-        case 'crossword':
-            initCrossword();
-            break;
-        case 'sudoku':
-            initSudoku();
-            break;
-    }
-}
-
-// Puzzle timer
-function startPuzzleTimer() {
-    puzzleTimer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - puzzleStartTime) / 1000);
-        const minutes = Math.floor(elapsed / 60);
-        const seconds = elapsed % 60;
-        document.getElementById('puzzleTimer').textContent = 
-            `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }, 1000);
-}
-
-// Word Search Functions
-function initWordSearch() {
-    document.getElementById('wordSearchGame').style.display = 'grid';
-    document.getElementById('puzzleTitle').textContent = 'Word Search';
-    
-    // Select random word set
-    const words = wordSearchWords[Math.floor(Math.random() * wordSearchWords.length)];
-    const grid = generateWordSearchGrid(words);
-    
-    // Display grid
-    const gridEl = document.getElementById('wordGrid');
-    gridEl.innerHTML = '';
-    
-    for (let i = 0; i < 10; i++) {
-        for (let j = 0; j < 10; j++) {
-            const cell = document.createElement('div');
-            cell.className = 'word-cell';
-            cell.textContent = grid[i][j];
-            cell.dataset.row = i;
-            cell.dataset.col = j;
-            cell.onclick = () => selectWordCell(cell);
-            gridEl.appendChild(cell);
-        }
-    }
-    
-    // Display word list
-    const listEl = document.getElementById('wordList');
-    listEl.innerHTML = '';
-    words.forEach(word => {
-        const item = document.createElement('div');
-        item.className = 'word-item';
-        item.textContent = word;
-        item.dataset.word = word;
-        listEl.appendChild(item);
-    });
-}
-
-function generateWordSearchGrid(words) {
-    const grid = Array(10).fill().map(() => Array(10).fill(''));
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    
-    // Place words (simplified - horizontal only for demo)
-    words.forEach((word, index) => {
-        const row = index * 2;
-        const col = Math.floor(Math.random() * (10 - word.length));
-        for (let i = 0; i < word.length; i++) {
-            grid[row][col + i] = word[i];
-        }
-    });
-    
-    // Fill empty cells
-    for (let i = 0; i < 10; i++) {
-        for (let j = 0; j < 10; j++) {
-            if (grid[i][j] === '') {
-                grid[i][j] = letters[Math.floor(Math.random() * letters.length)];
-            }
-        }
-    }
-    
-    return grid;
-}
-
-let selectedCells = [];
-function selectWordCell(cell) {
-    cell.classList.toggle('selected');
-    
-    if (cell.classList.contains('selected')) {
-        selectedCells.push(cell);
-    } else {
-        selectedCells = selectedCells.filter(c => c !== cell);
-    }
-    
-    // Check if selected cells form a word
-    if (selectedCells.length > 2) {
-        checkWordSelection();
-    }
-}
-
-function checkWordSelection() {
-    const selectedWord = selectedCells.map(cell => cell.textContent).join('');
-    const wordItems = document.querySelectorAll('.word-item');
-    
-    wordItems.forEach(item => {
-        if (item.dataset.word === selectedWord && !item.classList.contains('found')) {
-            item.classList.add('found');
-            selectedCells.forEach(cell => {
-                cell.classList.add('found');
-                cell.classList.remove('selected');
-            });
-            puzzleScore += 100;
-            document.getElementById('puzzleScore').textContent = puzzleScore;
-            
-            // Check if all words found
-            const remainingWords = document.querySelectorAll('.word-item:not(.found)');
-            if (remainingWords.length === 0) {
-                completePuzzle();
-            }
-        }
-    });
-    
-    selectedCells = [];
-}
-
-// Crossword Functions
-function initCrossword() {
-    document.getElementById('crosswordGame').style.display = 'grid';
-    document.getElementById('puzzleTitle').textContent = 'Mini Crossword';
-    
-    const puzzle = crosswordPuzzles[0]; // Use first puzzle for demo
-    const gridEl = document.getElementById('crosswordGrid');
-    gridEl.innerHTML = '';
-    
-    // Create grid
-    for (let i = 0; i < 5; i++) {
-        for (let j = 0; j < 10; j++) {
-            const cell = document.createElement('div');
-            cell.className = 'crossword-cell';
-            
-            if (puzzle.grid[i][j] === '') {
-                cell.classList.add('black');
-            } else {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.maxLength = 1;
-                input.dataset.answer = puzzle.grid[i][j];
-                cell.appendChild(input);
-            }
-            
-            gridEl.appendChild(cell);
-        }
-    }
-    
-    // Add numbers to cells
-    const numberedCells = [[0,0,'1'], [2,5,'3'], [4,0,'5']];
-    numberedCells.forEach(([row, col, num]) => {
-        const index = row * 10 + col;
-        const cell = gridEl.children[index];
-        const number = document.createElement('span');
-        number.className = 'cell-number';
-        number.textContent = num;
-        cell.appendChild(number);
-    });
-    
-    // Display clues
-    const acrossEl = document.getElementById('acrossClues');
-    const downEl = document.getElementById('downClues');
-    
-    acrossEl.innerHTML = Object.entries(puzzle.clues.across)
-        .map(([num, clue]) => `<div class="clue-item">${num}. ${clue}</div>`)
-        .join('');
-    
-    downEl.innerHTML = Object.entries(puzzle.clues.down)
-        .map(([num, clue]) => `<div class="clue-item">${num}. ${clue}</div>`)
-        .join('');
-}
-
-// Sudoku Functions
-function initSudoku() {
-    document.getElementById('sudokuGame').style.display = 'flex';
-    document.getElementById('puzzleTitle').textContent = 'Sudoku';
-    
-    const puzzle = generateSudokuPuzzle();
-    const gridEl = document.getElementById('sudokuGrid');
-    gridEl.innerHTML = '';
-    
-    for (let i = 0; i < 81; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'sudoku-cell';
-        cell.dataset.index = i;
-        
-        if (puzzle[i] !== 0) {
-            cell.textContent = puzzle[i];
-            cell.classList.add('fixed');
-        } else {
-            cell.onclick = () => selectSudokuCell(cell);
-        }
-        
-        gridEl.appendChild(cell);
-    }
-}
-
-function generateSudokuPuzzle() {
-    // Simplified sudoku puzzle (partial implementation)
-    const puzzle = Array(81).fill(0);
-    const preset = [
-        [0,5], [2,1], [5,9], [8,3],
-        [9,7], [11,6], [14,8], [17,2],
-        [18,8], [20,3], [23,7], [26,1],
-        [27,9], [30,5], [33,4], [35,8],
-        [36,4], [38,2], [41,6], [44,3],
-        [45,5], [47,7], [50,3], [53,1],
-        [54,1], [57,4], [60,5], [62,2],
-        [63,6], [66,9], [69,3], [71,8],
-        [72,5], [75,7], [78,9], [80,6]
-    ];
-    
-    preset.forEach(([index, value]) => {
-        puzzle[index] = value;
-    });
-    
-    return puzzle;
-}
-
-function selectSudokuCell(cell) {
-    if (selectedSudokuCell) {
-        selectedSudokuCell.classList.remove('selected');
-    }
-    cell.classList.add('selected');
-    selectedSudokuCell = cell;
-}
-
-function selectNumber(num) {
-    if (selectedSudokuCell && !selectedSudokuCell.classList.contains('fixed')) {
-        selectedSudokuCell.textContent = num;
-        // Simple validation (would need full implementation)
-        if (isValidSudokuMove(selectedSudokuCell, num)) {
-            puzzleScore += 10;
-            document.getElementById('puzzleScore').textContent = puzzleScore;
-        } else {
-            selectedSudokuCell.classList.add('error');
-            setTimeout(() => selectedSudokuCell.classList.remove('error'), 500);
-        }
-    }
-}
-
-function eraseNumber() {
-    if (selectedSudokuCell && !selectedSudokuCell.classList.contains('fixed')) {
-        selectedSudokuCell.textContent = '';
-    }
-}
-
-function isValidSudokuMove(cell, num) {
-    // Simplified validation (would need full implementation)
-    return true;
-}
-
-// Puzzle completion
-function completePuzzle() {
-    clearInterval(puzzleTimer);
-    
-    const elapsed = Math.floor((Date.now() - puzzleStartTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    
-    document.getElementById('completedTime').textContent = 
-        `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    document.getElementById('completedScore').textContent = puzzleScore;
-    
-    document.getElementById('puzzleContainer').style.display = 'none';
-    document.getElementById('puzzleComplete').style.display = 'block';
-    
-    // Save achievement
-    if (app && app.data) {
-        if (!app.data.puzzlesCompleted) {
-            app.data.puzzlesCompleted = 0;
-        }
-        app.data.puzzlesCompleted++;
-        app.saveData();
-        
-        // Check for puzzle achievements
-        if (app.data.puzzlesCompleted === 1) {
-            app.showSuccess('First puzzle completed! Keep exercising your mind! 🧩');
-        }
-    }
-}
-
-// Check puzzle
-function checkPuzzle() {
-    switch(currentPuzzleType) {
-        case 'crossword':
-            checkCrossword();
-            break;
-        case 'sudoku':
-            checkSudoku();
-            break;
-    }
-}
-
-function checkCrossword() {
-    const inputs = document.querySelectorAll('.crossword-cell input');
-    let correct = 0;
-    let total = 0;
-    
-    inputs.forEach(input => {
-        if (input.dataset.answer) {
-            total++;
-            if (input.value.toUpperCase() === input.dataset.answer) {
-                correct++;
-                input.style.color = 'var(--success)';
-            } else if (input.value) {
-                input.style.color = '#ef4444';
-            }
-        }
-    });
-    
-    if (correct === total) {
-        completePuzzle();
-    } else {
-        app.showSuccess(`${correct}/${total} correct! Keep trying!`, 'warning');
-    }
-}
-
-function checkSudoku() {
-    // Simplified check (would need full implementation)
-    const cells = document.querySelectorAll('.sudoku-cell:not(.fixed)');
-    const filled = Array.from(cells).filter(cell => cell.textContent !== '').length;
-    
-    if (filled === cells.length) {
-        completePuzzle();
-    } else {
-        app.showSuccess(`${filled}/${cells.length} cells filled!`, 'warning');
-    }
-}
-
-// Get hint
-function getPuzzleHint() {
-    puzzleScore = Math.max(0, puzzleScore - 50);
-    document.getElementById('puzzleScore').textContent = puzzleScore;
-    
-    switch(currentPuzzleType) {
-        case 'wordsearch':
-            highlightWordHint();
-            break;
-        case 'crossword':
-            fillCrosswordHint();
-            break;
-        case 'sudoku':
-            fillSudokuHint();
-            break;
-    }
-}
-
-function highlightWordHint() {
-    const remainingWords = document.querySelectorAll('.word-item:not(.found)');
-    if (remainingWords.length > 0) {
-        const word = remainingWords[0];
-        word.style.background = 'rgba(251, 191, 36, 0.3)';
-        setTimeout(() => {
-            word.style.background = '';
-        }, 2000);
-    }
-}
-
-function fillCrosswordHint() {
-    const emptyInputs = Array.from(document.querySelectorAll('.crossword-cell input'))
-        .filter(input => !input.value && input.dataset.answer);
-    
-    if (emptyInputs.length > 0) {
-        const randomInput = emptyInputs[Math.floor(Math.random() * emptyInputs.length)];
-        randomInput.value = randomInput.dataset.answer;
-        randomInput.style.color = 'var(--accent)';
-    }
-}
-
-function fillSudokuHint() {
-    const emptyCells = Array.from(document.querySelectorAll('.sudoku-cell:not(.fixed)'))
-        .filter(cell => !cell.textContent);
-    
-    if (emptyCells.length > 0) {
-        const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-        randomCell.textContent = Math.floor(Math.random() * 9) + 1;
-        randomCell.style.color = 'var(--accent)';
-    }
-}
-
-// New puzzle
-function newPuzzle() {
-    if (currentPuzzleType) {
-        startPuzzle(currentPuzzleType);
-    }
-}
-
-// Update the showFeature function to include puzzle
-const originalShowFeature = showFeature;
-showFeature = function(feature) {
-    originalShowFeature(feature);
-    
-    if (feature === 'puzzle') {
-        initializePuzzle();
-    }
-};
-
-// Update hideAllSections to include puzzle
-const originalHideAllSections = hideAllSections;
-hideAllSections = function() {
-    const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources', 'puzzle'];
-    sections.forEach(section => {
-        const element = document.getElementById(section);
-        if (element) {
-            element.style.display = 'none';
-        }
-    });
-};// Add these functions to your app.js file (add them after the existing code)
-
-// Puzzle Game Variables
-let currentPuzzleType = null;
-let puzzleTimer = null;
-let puzzleStartTime = null;
-let puzzleScore = 0;
-let selectedSudokuCell = null;
-
-// Word Search Data
-const wordSearchWords = [
-    ['MINDFUL', 'PEACEFUL', 'BREATHE', 'CALM', 'HAPPY'],
-    ['JOURNAL', 'GRATEFUL', 'RELAX', 'FOCUS', 'SMILE'],
-    ['WELLNESS', 'BALANCE', 'SERENE', 'GENTLE', 'HOPE'],
-    ['MEDITATION', 'POSITIVE', 'HEALING', 'GROWTH', 'LOVE']
-];
-
-// Crossword Data
-const crosswordPuzzles = [
-    {
-        grid: [
-            ['C','A','L','M','',  '','','','',''],
-            ['','','O','','',  '','','','',''],
-            ['','','V','','',  'P','E','A','C','E'],
-            ['','','E','','',  '','','','',''],
-            ['H','O','P','E','',  '','','','','']
