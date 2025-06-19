@@ -1,5 +1,5 @@
 // MindfulMe - Enhanced Mental Health Companion
-// Complete app.js with all fixes and enhancements
+
 
 // Data Management
 class MindfulMeApp {
@@ -1126,3 +1126,511 @@ function removeTag(tag) {
 function exportData() {
     app.exportData();
 }
+
+const crosswordPuzzles = [
+    {
+        grid: [
+            ['C','A','L','M','',  '','','','',''],
+            ['','','O','','',  '','','','',''],
+            ['','','V','','',  'P','E','A','C','E'],
+            ['','','E','','',  '','','','',''],
+            ['H','O','P','E','',  '','','','','']
+        ],
+        clues: {
+            across: {
+                '1': 'Peaceful state of mind (4)',
+                '3': 'Tranquility and harmony (5)',
+                '5': 'Optimistic feeling (4)'
+            },
+            down: {
+                '1': 'Affection and care (4)'
+            }
+        }
+    }
+];
+
+// Initialize puzzle in the showFeature function
+function initializePuzzle() {
+    if (!document.getElementById('puzzle')) return;
+    
+    // Add puzzle to navigation sections
+    const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources', 'puzzle'];
+    
+    // Show puzzle selector by default
+    showPuzzleSelector();
+}
+
+// Show puzzle selector
+function showPuzzleSelector() {
+    document.querySelector('.puzzle-selector').style.display = 'grid';
+    document.getElementById('puzzleContainer').style.display = 'none';
+    document.getElementById('puzzleComplete').style.display = 'none';
+    
+    // Reset timer
+    if (puzzleTimer) {
+        clearInterval(puzzleTimer);
+        puzzleTimer = null;
+    }
+}
+
+// Start a puzzle
+function startPuzzle(type) {
+    currentPuzzleType = type;
+    puzzleScore = 0;
+    puzzleStartTime = Date.now();
+    
+    // Hide selector, show container
+    document.querySelector('.puzzle-selector').style.display = 'none';
+    document.getElementById('puzzleContainer').style.display = 'block';
+    
+    // Hide all games
+    document.getElementById('wordSearchGame').style.display = 'none';
+    document.getElementById('crosswordGame').style.display = 'none';
+    document.getElementById('sudokuGame').style.display = 'none';
+    
+    // Start timer
+    startPuzzleTimer();
+    
+    // Initialize selected puzzle
+    switch(type) {
+        case 'wordsearch':
+            initWordSearch();
+            break;
+        case 'crossword':
+            initCrossword();
+            break;
+        case 'sudoku':
+            initSudoku();
+            break;
+    }
+}
+
+// Puzzle timer
+function startPuzzleTimer() {
+    puzzleTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - puzzleStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('puzzleTimer').textContent = 
+            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Word Search Functions
+function initWordSearch() {
+    document.getElementById('wordSearchGame').style.display = 'grid';
+    document.getElementById('puzzleTitle').textContent = 'Word Search';
+    
+    // Select random word set
+    const words = wordSearchWords[Math.floor(Math.random() * wordSearchWords.length)];
+    const grid = generateWordSearchGrid(words);
+    
+    // Display grid
+    const gridEl = document.getElementById('wordGrid');
+    gridEl.innerHTML = '';
+    
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 10; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'word-cell';
+            cell.textContent = grid[i][j];
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+            cell.onclick = () => selectWordCell(cell);
+            gridEl.appendChild(cell);
+        }
+    }
+    
+    // Display word list
+    const listEl = document.getElementById('wordList');
+    listEl.innerHTML = '';
+    words.forEach(word => {
+        const item = document.createElement('div');
+        item.className = 'word-item';
+        item.textContent = word;
+        item.dataset.word = word;
+        listEl.appendChild(item);
+    });
+}
+
+function generateWordSearchGrid(words) {
+    const grid = Array(10).fill().map(() => Array(10).fill(''));
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    
+    // Place words (simplified - horizontal only for demo)
+    words.forEach((word, index) => {
+        const row = index * 2;
+        const col = Math.floor(Math.random() * (10 - word.length));
+        for (let i = 0; i < word.length; i++) {
+            grid[row][col + i] = word[i];
+        }
+    });
+    
+    // Fill empty cells
+    for (let i = 0; i < 10; i++) {
+        for (let j = 0; j < 10; j++) {
+            if (grid[i][j] === '') {
+                grid[i][j] = letters[Math.floor(Math.random() * letters.length)];
+            }
+        }
+    }
+    
+    return grid;
+}
+
+let selectedCells = [];
+function selectWordCell(cell) {
+    cell.classList.toggle('selected');
+    
+    if (cell.classList.contains('selected')) {
+        selectedCells.push(cell);
+    } else {
+        selectedCells = selectedCells.filter(c => c !== cell);
+    }
+    
+    // Check if selected cells form a word
+    if (selectedCells.length > 2) {
+        checkWordSelection();
+    }
+}
+
+function checkWordSelection() {
+    const selectedWord = selectedCells.map(cell => cell.textContent).join('');
+    const wordItems = document.querySelectorAll('.word-item');
+    
+    wordItems.forEach(item => {
+        if (item.dataset.word === selectedWord && !item.classList.contains('found')) {
+            item.classList.add('found');
+            selectedCells.forEach(cell => {
+                cell.classList.add('found');
+                cell.classList.remove('selected');
+            });
+            puzzleScore += 100;
+            document.getElementById('puzzleScore').textContent = puzzleScore;
+            
+            // Check if all words found
+            const remainingWords = document.querySelectorAll('.word-item:not(.found)');
+            if (remainingWords.length === 0) {
+                completePuzzle();
+            }
+        }
+    });
+    
+    selectedCells = [];
+}
+
+// Crossword Functions
+function initCrossword() {
+    document.getElementById('crosswordGame').style.display = 'grid';
+    document.getElementById('puzzleTitle').textContent = 'Mini Crossword';
+    
+    const puzzle = crosswordPuzzles[0]; // Use first puzzle for demo
+    const gridEl = document.getElementById('crosswordGrid');
+    gridEl.innerHTML = '';
+    
+    // Create grid
+    for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 10; j++) {
+            const cell = document.createElement('div');
+            cell.className = 'crossword-cell';
+            
+            if (puzzle.grid[i][j] === '') {
+                cell.classList.add('black');
+            } else {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.dataset.answer = puzzle.grid[i][j];
+                cell.appendChild(input);
+            }
+            
+            gridEl.appendChild(cell);
+        }
+    }
+    
+    // Add numbers to cells
+    const numberedCells = [[0,0,'1'], [2,5,'3'], [4,0,'5']];
+    numberedCells.forEach(([row, col, num]) => {
+        const index = row * 10 + col;
+        const cell = gridEl.children[index];
+        const number = document.createElement('span');
+        number.className = 'cell-number';
+        number.textContent = num;
+        cell.appendChild(number);
+    });
+    
+    // Display clues
+    const acrossEl = document.getElementById('acrossClues');
+    const downEl = document.getElementById('downClues');
+    
+    acrossEl.innerHTML = Object.entries(puzzle.clues.across)
+        .map(([num, clue]) => `<div class="clue-item">${num}. ${clue}</div>`)
+        .join('');
+    
+    downEl.innerHTML = Object.entries(puzzle.clues.down)
+        .map(([num, clue]) => `<div class="clue-item">${num}. ${clue}</div>`)
+        .join('');
+}
+
+// Sudoku Functions
+function initSudoku() {
+    document.getElementById('sudokuGame').style.display = 'flex';
+    document.getElementById('puzzleTitle').textContent = 'Sudoku';
+    
+    const puzzle = generateSudokuPuzzle();
+    const gridEl = document.getElementById('sudokuGrid');
+    gridEl.innerHTML = '';
+    
+    for (let i = 0; i < 81; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'sudoku-cell';
+        cell.dataset.index = i;
+        
+        if (puzzle[i] !== 0) {
+            cell.textContent = puzzle[i];
+            cell.classList.add('fixed');
+        } else {
+            cell.onclick = () => selectSudokuCell(cell);
+        }
+        
+        gridEl.appendChild(cell);
+    }
+}
+
+function generateSudokuPuzzle() {
+    // Simplified sudoku puzzle (partial implementation)
+    const puzzle = Array(81).fill(0);
+    const preset = [
+        [0,5], [2,1], [5,9], [8,3],
+        [9,7], [11,6], [14,8], [17,2],
+        [18,8], [20,3], [23,7], [26,1],
+        [27,9], [30,5], [33,4], [35,8],
+        [36,4], [38,2], [41,6], [44,3],
+        [45,5], [47,7], [50,3], [53,1],
+        [54,1], [57,4], [60,5], [62,2],
+        [63,6], [66,9], [69,3], [71,8],
+        [72,5], [75,7], [78,9], [80,6]
+    ];
+    
+    preset.forEach(([index, value]) => {
+        puzzle[index] = value;
+    });
+    
+    return puzzle;
+}
+
+function selectSudokuCell(cell) {
+    if (selectedSudokuCell) {
+        selectedSudokuCell.classList.remove('selected');
+    }
+    cell.classList.add('selected');
+    selectedSudokuCell = cell;
+}
+
+function selectNumber(num) {
+    if (selectedSudokuCell && !selectedSudokuCell.classList.contains('fixed')) {
+        selectedSudokuCell.textContent = num;
+        // Simple validation (would need full implementation)
+        if (isValidSudokuMove(selectedSudokuCell, num)) {
+            puzzleScore += 10;
+            document.getElementById('puzzleScore').textContent = puzzleScore;
+        } else {
+            selectedSudokuCell.classList.add('error');
+            setTimeout(() => selectedSudokuCell.classList.remove('error'), 500);
+        }
+    }
+}
+
+function eraseNumber() {
+    if (selectedSudokuCell && !selectedSudokuCell.classList.contains('fixed')) {
+        selectedSudokuCell.textContent = '';
+    }
+}
+
+function isValidSudokuMove(cell, num) {
+    // Simplified validation (would need full implementation)
+    return true;
+}
+
+// Puzzle completion
+function completePuzzle() {
+    clearInterval(puzzleTimer);
+    
+    const elapsed = Math.floor((Date.now() - puzzleStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    document.getElementById('completedTime').textContent = 
+        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('completedScore').textContent = puzzleScore;
+    
+    document.getElementById('puzzleContainer').style.display = 'none';
+    document.getElementById('puzzleComplete').style.display = 'block';
+    
+    // Save achievement
+    if (app && app.data) {
+        if (!app.data.puzzlesCompleted) {
+            app.data.puzzlesCompleted = 0;
+        }
+        app.data.puzzlesCompleted++;
+        app.saveData();
+        
+        // Check for puzzle achievements
+        if (app.data.puzzlesCompleted === 1) {
+            app.showSuccess('First puzzle completed! Keep exercising your mind! 🧩');
+        }
+    }
+}
+
+// Check puzzle
+function checkPuzzle() {
+    switch(currentPuzzleType) {
+        case 'crossword':
+            checkCrossword();
+            break;
+        case 'sudoku':
+            checkSudoku();
+            break;
+    }
+}
+
+function checkCrossword() {
+    const inputs = document.querySelectorAll('.crossword-cell input');
+    let correct = 0;
+    let total = 0;
+    
+    inputs.forEach(input => {
+        if (input.dataset.answer) {
+            total++;
+            if (input.value.toUpperCase() === input.dataset.answer) {
+                correct++;
+                input.style.color = 'var(--success)';
+            } else if (input.value) {
+                input.style.color = '#ef4444';
+            }
+        }
+    });
+    
+    if (correct === total) {
+        completePuzzle();
+    } else {
+        app.showSuccess(`${correct}/${total} correct! Keep trying!`, 'warning');
+    }
+}
+
+function checkSudoku() {
+    // Simplified check (would need full implementation)
+    const cells = document.querySelectorAll('.sudoku-cell:not(.fixed)');
+    const filled = Array.from(cells).filter(cell => cell.textContent !== '').length;
+    
+    if (filled === cells.length) {
+        completePuzzle();
+    } else {
+        app.showSuccess(`${filled}/${cells.length} cells filled!`, 'warning');
+    }
+}
+
+// Get hint
+function getPuzzleHint() {
+    puzzleScore = Math.max(0, puzzleScore - 50);
+    document.getElementById('puzzleScore').textContent = puzzleScore;
+    
+    switch(currentPuzzleType) {
+        case 'wordsearch':
+            highlightWordHint();
+            break;
+        case 'crossword':
+            fillCrosswordHint();
+            break;
+        case 'sudoku':
+            fillSudokuHint();
+            break;
+    }
+}
+
+function highlightWordHint() {
+    const remainingWords = document.querySelectorAll('.word-item:not(.found)');
+    if (remainingWords.length > 0) {
+        const word = remainingWords[0];
+        word.style.background = 'rgba(251, 191, 36, 0.3)';
+        setTimeout(() => {
+            word.style.background = '';
+        }, 2000);
+    }
+}
+
+function fillCrosswordHint() {
+    const emptyInputs = Array.from(document.querySelectorAll('.crossword-cell input'))
+        .filter(input => !input.value && input.dataset.answer);
+    
+    if (emptyInputs.length > 0) {
+        const randomInput = emptyInputs[Math.floor(Math.random() * emptyInputs.length)];
+        randomInput.value = randomInput.dataset.answer;
+        randomInput.style.color = 'var(--accent)';
+    }
+}
+
+function fillSudokuHint() {
+    const emptyCells = Array.from(document.querySelectorAll('.sudoku-cell:not(.fixed)'))
+        .filter(cell => !cell.textContent);
+    
+    if (emptyCells.length > 0) {
+        const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        randomCell.textContent = Math.floor(Math.random() * 9) + 1;
+        randomCell.style.color = 'var(--accent)';
+    }
+}
+
+// New puzzle
+function newPuzzle() {
+    if (currentPuzzleType) {
+        startPuzzle(currentPuzzleType);
+    }
+}
+
+// Update the showFeature function to include puzzle
+const originalShowFeature = showFeature;
+showFeature = function(feature) {
+    originalShowFeature(feature);
+    
+    if (feature === 'puzzle') {
+        initializePuzzle();
+    }
+};
+
+// Update hideAllSections to include puzzle
+const originalHideAllSections = hideAllSections;
+hideAllSections = function() {
+    const sections = ['home', 'mood', 'breathing', 'journal', 'insights', 'resources', 'puzzle'];
+    sections.forEach(section => {
+        const element = document.getElementById(section);
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
+};// Add these functions to your app.js file (add them after the existing code)
+
+// Puzzle Game Variables
+let currentPuzzleType = null;
+let puzzleTimer = null;
+let puzzleStartTime = null;
+let puzzleScore = 0;
+let selectedSudokuCell = null;
+
+// Word Search Data
+const wordSearchWords = [
+    ['MINDFUL', 'PEACEFUL', 'BREATHE', 'CALM', 'HAPPY'],
+    ['JOURNAL', 'GRATEFUL', 'RELAX', 'FOCUS', 'SMILE'],
+    ['WELLNESS', 'BALANCE', 'SERENE', 'GENTLE', 'HOPE'],
+    ['MEDITATION', 'POSITIVE', 'HEALING', 'GROWTH', 'LOVE']
+];
+
+// Crossword Data
+const crosswordPuzzles = [
+    {
+        grid: [
+            ['C','A','L','M','',  '','','','',''],
+            ['','','O','','',  '','','','',''],
+            ['','','V','','',  'P','E','A','C','E'],
+            ['','','E','','',  '','','','',''],
+            ['H','O','P','E','',  '','','','','']
