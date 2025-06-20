@@ -2605,3 +2605,178 @@ nav {
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    /* Navigation fixes - remove icons and better spacing */
+.nav-menu {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.nav-link:hover {
+    color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+}
+
+/* Fix page scrolling issue */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.hero-section, .mood-tracker, .breathing-exercise, .journal, .insights, .resources, .puzzle-feature {
+    min-height: 100vh;
+    padding-top: 80px;
+}
+
+/* Fix mood note textarea */
+.mood-note {
+    margin-top: 1.5rem;
+}
+
+.mood-note textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    resize: vertical;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.mood-note textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(30, 41, 59, 0.7);
+}
+
+/* Fix journal textarea */
+#journalContent {
+    width: 100%;
+    min-height: 400px;
+    padding: 1.5rem;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+#journalContent:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(30, 41, 59, 0.7);
+}
+
+/* Fix word search grid */
+.word-search-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 40px);
+    grid-template-rows: repeat(10, 40px);
+    gap: 2px;
+    margin: 2rem auto;
+    width: fit-content;
+}
+
+.grid-cell {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+}
+
+.grid-cell:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: scale(1.1);
+}
+
+.grid-cell.selecting {
+    background: rgba(99, 102, 241, 0.4);
+    border-color: var(--primary);
+}
+
+.grid-cell.found {
+    background: rgba(16, 185, 129, 0.3);
+    border-color: #10b981;
+}
+
+/* Breathing container active state */
+.breathing-container {
+    margin-top: 2rem;
+}
+
+#breathingContainer {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+/* Make factor chips more clickable */
+.factor-chip {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.factor-chip:hover {
+    transform: translateY(-2px);
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.factor-chip.selected {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.05);
+}
+
+/* Mood button improvements */
+.mood-btn {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mood-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+}
+
+.mood-btn.selected {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.mood-label {
+    font-weight: normal;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
