@@ -19,24 +19,12 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="nav-menu" id="navMenu">
-                <a href="#" class="nav-link" onclick="showPage('home')">
-                    <i class="fas fa-home"></i> Home
-                </a>
-                <a href="#" class="nav-link" onclick="showPage('mood')">
-                    <i class="fas fa-smile"></i> Mood
-                </a>
-                <a href="#" class="nav-link" onclick="showPage('breathe')">
-                    <i class="fas fa-wind"></i> Breathe
-                </a>
-                <a href="#" class="nav-link" onclick="showPage('journal')">
-                    <i class="fas fa-book"></i> Journal
-                </a>
-                <a href="#" class="nav-link" onclick="showPage('insights')">
-                    <i class="fas fa-chart-line"></i> Insights
-                </a>
-                <a href="#" class="nav-link" onclick="showPage('resources')">
-                    <i class="fas fa-heart"></i> Resources
-                </a>
+                <a href="#" class="nav-link" onclick="showPage('home')">Home</a>
+                <a href="#" class="nav-link" onclick="showPage('mood')">Mood</a>
+                <a href="#" class="nav-link" onclick="showPage('breathe')">Breathe</a>
+                <a href="#" class="nav-link" onclick="showPage('journal')">Journal</a>
+                <a href="#" class="nav-link" onclick="showPage('insights')">Insights</a>
+                <a href="#" class="nav-link" onclick="showPage('resources')">Resources</a>
             </div>
         </div>
     </nav>
@@ -204,7 +192,7 @@
                     </div>
                     
                     <div class="mood-note">
-                        <textarea id="moodNote" placeholder="Add a note about how you're feeling... (optional)"></textarea>
+                        <textarea id="moodNote" placeholder="Add a note about how you're feeling... (optional)" rows="4"></textarea>
                     </div>
                     
                     <button class="btn btn-primary save-mood-btn" onclick="app.saveMood()">
@@ -221,7 +209,7 @@
             <h2 class="section-title">Breathing Exercises</h2>
             <p class="section-subtitle">Take a moment to center yourself with guided breathing</p>
             
-            <div class="breathing-techniques">
+            <div class="breathing-techniques" id="breathingTechniques">
                 <div class="technique-card" onclick="app.startBreathing('478')">
                     <div class="technique-icon">🌙</div>
                     <h3>4-7-8 Breathing</h3>
@@ -244,7 +232,7 @@
                 </div>
             </div>
             
-            <div class="breathing-container">
+            <div class="breathing-container" id="breathingContainer" style="display: none;">
                 <!-- Breathing exercise content will be loaded here -->
             </div>
         </div>
@@ -259,7 +247,7 @@
             <div class="journal-prompt" id="journalPrompt"></div>
             
             <div class="journal-editor">
-                <textarea id="journalContent" placeholder="Start writing your thoughts..." onkeyup="app.updateWordCount()"></textarea>
+                <textarea id="journalContent" placeholder="Start writing your thoughts..." onkeyup="app.updateWordCount()" rows="12"></textarea>
                 <div class="journal-toolbar">
                     <div class="word-count">Words: <span id="wordCount">0</span></div>
                     <div class="journal-tags">
