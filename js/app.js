@@ -383,58 +383,65 @@ class MindfulMeApp {
 
     // Breathing exercise methods
     startBreathing(technique) {
-        const techniques = {
-            '478': { inhale: 4, hold: 7, exhale: 8, name: '4-7-8 Breathing' },
-            'box': { inhale: 4, hold: 4, exhale: 4, name: 'Box Breathing' },
-            'calm': { inhale: 3, hold: 0, exhale: 6, name: 'Calm Breathing' }
-        };
-        
-        const selected = techniques[technique];
-        this.currentTechnique = selected;
-        this.sessionStartTime = Date.now();
-        this.cycleCount = 0;
-        this.isPaused = false;
-        
-        // Update UI
-        document.querySelector('.breathing-container').innerHTML = `
-            <h3>${selected.name}</h3>
-            <div class="breathing-stats">
-                <div class="breathing-stat">
-                    <span class="stat-label">Cycles</span>
-                    <span class="stat-value" id="cycleCount">0</span>
+    const techniques = {
+        '478': { inhale: 4, hold: 7, exhale: 8, name: '4-7-8 Breathing' },
+        'box': { inhale: 4, hold: 4, exhale: 4, name: 'Box Breathing' },
+        'calm': { inhale: 3, hold: 0, exhale: 6, name: 'Calm Breathing' }
+    };
+    
+    const selected = techniques[technique];
+    this.currentTechnique = selected;
+    this.sessionStartTime = Date.now();
+    this.cycleCount = 0;
+    this.isPaused = false;
+    
+    // Hide technique selection and show breathing exercise
+    document.getElementById('breathingTechniques').style.display = 'none';
+    document.getElementById('breathingContainer').style.display = 'block';
+    
+    // Update breathing container
+    document.getElementById('breathingContainer').innerHTML = `
+        <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="app.backToTechniques()">
+            <i class="fas fa-arrow-left"></i> Back to Techniques
+        </button>
+        <h3>${selected.name}</h3>
+        <div class="breathing-stats">
+            <div class="breathing-stat">
+                <span class="stat-label">Cycles</span>
+                <span class="stat-value" id="cycleCount">0</span>
+            </div>
+            <div class="breathing-stat">
+                <span class="stat-label">Session Time</span>
+                <span class="stat-value" id="sessionTime">0:00</span>
+            </div>
+        </div>
+        <div class="breathing-visual">
+            <div class="breathing-circle" id="breathingCircle">
+                <svg class="progress-ring" width="200" height="200">
+                    <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+                    <circle class="progress-ring-circle" cx="100" cy="100" r="90" />
+                </svg>
+                <div class="breathing-inner">
+                    <div class="breathing-text" id="breathingText">Get Ready</div>
+                    <div class="breathing-counter" id="breathingCounter"></div>
                 </div>
-                <div class="breathing-stat">
-                    <span class="stat-label">Session Time</span>
-                    <span class="stat-value" id="sessionTime">0:00</span>
-                </div>
             </div>
-            <div class="breathing-visual">
-                <div class="breathing-circle" id="breathingCircle">
-                    <svg class="progress-ring" width="200" height="200">
-                        <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
-                        <circle class="progress-ring-circle" cx="100" cy="100" r="90" />
-                    </svg>
-                    <div class="breathing-inner">
-                        <div class="breathing-text" id="breathingText">Get Ready</div>
-                        <div class="breathing-counter" id="breathingCounter"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="breathing-progress">
-                <div class="breathing-progress-bar" id="breathingProgress"></div>
-            </div>
-            <div class="breathing-controls">
-                <button class="btn btn-secondary" onclick="app.pauseBreathing()" id="pauseBtn">Pause</button>
-                <button class="btn btn-secondary" onclick="app.stopBreathing()">Stop</button>
-            </div>
-        `;
-        
-        // Start session timer
-        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
-        
-        // Start breathing cycle
-        this.breathingCycle();
-    }
+        </div>
+        <div class="breathing-progress">
+            <div class="breathing-progress-bar" id="breathingProgress"></div>
+        </div>
+        <div class="breathing-controls">
+            <button class="btn btn-secondary" onclick="app.pauseBreathing()" id="pauseBtn">Pause</button>
+            <button class="btn btn-secondary" onclick="app.stopBreathing()">Stop</button>
+        </div>
+    `;
+    
+    // Start session timer
+    this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
+    
+    // Start breathing cycle
+    this.breathingCycle();
+}
 
     // Update session timer
     updateSessionTimer() {
@@ -594,6 +601,12 @@ class MindfulMeApp {
             <button class="btn btn-primary" onclick="showPage('home')">Back to Home</button>
         `;
     }
+
+    backToTechniques() {
+    this.stopBreathing();
+    document.getElementById('breathingTechniques').style.display = 'grid';
+    document.getElementById('breathingContainer').style.display = 'none';
+    document.getElementById('breathingContainer').innerHTML = '';
 
     // Journal methods
     loadJournalPrompt() {
@@ -1328,6 +1341,9 @@ function showPage(page) {
     document.querySelectorAll('.hero-section, .mood-tracker, .breathing-exercise, .journal, .insights, .resources, .puzzle-feature').forEach(section => {
         section.style.display = 'none';
     });
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
     
     // Show selected page
     switch(page) {
