@@ -30,105 +30,105 @@
     </nav>
 
     <!-- Hero Section / Home -->
-    <div class="hero-section">
-        <div class="container">
-            <h1 class="animated-gradient-title">Welcome to MindfulMe</h1>
-            <p class="hero-subtitle">Your daily companion for mental wellness, self-reflection, and emotional balance</p>
-            
-            <!-- Stats Dashboard -->
-            <div class="stats-dashboard">
-                <div class="stat-card">
-                    <div class="stat-icon">🔥</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="streakDays">0</div>
-                        <div class="stat-label">Day Streak</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="totalEntries">0</div>
-                        <div class="stat-label">Total Entries</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">😊</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="avgMood">-</div>
-                        <div class="stat-label">Avg Mood</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🧘</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="mindfulMinutes">0</div>
-                        <div class="stat-label">Mindful Minutes</div>
-                    </div>
+<div class="hero-section">
+    <div class="container">
+        <h1 class="animated-gradient-title">Welcome to MindfulMe</h1>
+        <p class="hero-subtitle">Your daily companion for mental wellness, self-reflection, and emotional balance</p>
+        
+        <!-- Stats Dashboard -->
+        <div class="stats-dashboard">
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="streakDays">0</div>
+                    <div class="stat-label">Day Streak</div>
                 </div>
             </div>
-
-            <!-- Achievements Section -->
-            <div class="achievements-section" id="achievementsContainer">
-                <!-- Achievements will be loaded here by JavaScript -->
-            </div>
-
-            <!-- Feature Grid -->
-            <div class="feature-grid">
-                <div class="feature-card" onclick="showPage('mood')">
-                    <div class="feature-icon bounce-animation">😊</div>
-                    <h3>Track Mood</h3>
-                    <p>Log your daily emotions and identify patterns</p>
-                    <div class="current-mood">
-                        Today's Mood: <span id="currentMoodEmoji">-</span>
-                    </div>
-                </div>
-                
-                <div class="feature-card" onclick="showPage('breathe')">
-                    <div class="feature-icon float-animation">🌬️</div>
-                    <h3>Breathing Exercise</h3>
-                    <p>Guided breathing for relaxation and focus</p>
-                    <div class="feature-stats">
-                        <span id="weeklyCheckIns">0</span> sessions this week
-                    </div>
-                </div>
-                
-                <div class="feature-card" onclick="showPage('journal')">
-                    <div class="feature-icon rotate-animation">📝</div>
-                    <h3>Journal</h3>
-                    <p>Express your thoughts and feelings freely</p>
-                    <div class="feature-badge">Daily Prompt</div>
-                </div>
-                
-                <div class="feature-card" onclick="showPage('insights')">
-                    <div class="feature-icon">📈</div>
-                    <h3>Insights</h3>
-                    <p>Understand your emotional patterns</p>
-                </div>
-                
-                <div class="feature-card" onclick="showPage('resources')">
-                    <div class="feature-icon">💚</div>
-                    <h3>Resources</h3>
-                    <p>Mental health support and tips</p>
-                </div>
-                
-                <div class="feature-card" onclick="showPage('puzzle')">
-                    <div class="feature-icon">🧩</div>
-                    <h3>Daily Puzzle</h3>
-                    <p>Exercise your mind with fun puzzles</p>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="totalEntries">0</div>
+                    <div class="stat-label">Total Entries</div>
                 </div>
             </div>
-            
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <button class="btn btn-primary" onclick="showPage('mood')">
-                    <i class="fas fa-plus"></i> Quick Mood Check
-                </button>
-                <button class="btn btn-secondary" onclick="app.exportData()">
-                    <i class="fas fa-download"></i> Export Data
-                </button>
+            <div class="stat-card">
+                <div class="stat-icon">😊</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="avgMood">-</div>
+                    <div class="stat-label">Avg Mood</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🧘</div>
+                <div class="stat-content">
+                    <div class="stat-number" id="mindfulMinutes">0</div>
+                    <div class="stat-label">Mindful Minutes</div>
+                </div>
             </div>
         </div>
+
+        <!-- Feature Grid (moved up) -->
+        <div class="feature-grid">
+            <div class="feature-card" onclick="showPage('mood')">
+                <div class="feature-icon bounce-animation">😊</div>
+                <h3>Track Mood</h3>
+                <p>Log your daily emotions and identify patterns</p>
+                <div class="current-mood">
+                    Today's Mood: <span id="currentMoodEmoji">-</span>
+                </div>
+            </div>
+            
+            <div class="feature-card" onclick="showPage('breathe')">
+                <div class="feature-icon float-animation">🌬️</div>
+                <h3>Breathing Exercise</h3>
+                <p>Guided breathing for relaxation and focus</p>
+                <div class="feature-stats">
+                    <span id="weeklyCheckIns">0</span> sessions this week
+                </div>
+            </div>
+            
+            <div class="feature-card" onclick="showPage('journal')">
+                <div class="feature-icon rotate-animation">📝</div>
+                <h3>Journal</h3>
+                <p>Express your thoughts and feelings freely</p>
+                <div class="feature-badge">Daily Prompt</div>
+            </div>
+            
+            <div class="feature-card" onclick="showPage('insights')">
+                <div class="feature-icon">📈</div>
+                <h3>Insights</h3>
+                <p>Understand your emotional patterns</p>
+            </div>
+            
+            <div class="feature-card" onclick="showPage('resources')">
+                <div class="feature-icon">💚</div>
+                <h3>Resources</h3>
+                <p>Mental health support and tips</p>
+            </div>
+            
+            <div class="feature-card" onclick="showPage('puzzle')">
+                <div class="feature-icon">🧩</div>
+                <h3>Daily Puzzle</h3>
+                <p>Exercise your mind with fun puzzles</p>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="btn btn-primary" onclick="showPage('mood')">
+                <i class="fas fa-plus"></i> Quick Mood Check
+            </button>
+            <button class="btn btn-secondary" onclick="app.exportData()">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+        </div>
+        
+        <!-- Achievements Section (moved down) -->
+        <div class="achievements-section" id="achievementsContainer">
+            <!-- Achievements will be loaded here by JavaScript -->
+        </div>
     </div>
+</div>
 
     <!-- Mood Tracker -->
     <div class="mood-tracker" style="display: none;">
