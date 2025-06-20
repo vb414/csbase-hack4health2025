@@ -972,4 +972,411 @@ class MindfulMeApp {
         }
     }
 
+    // Export data
+    exportData() {
+        const dataStr = JSON.stringify(this.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `mindfulme_data_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
+
+// Puzzle game implementation
+let puzzleGame = {
+    currentPuzzle: null,
+    startTime: null,
+    score: 0,
+    hintsUsed: 0,
+    timer: null
+};
+
+// Initialize puzzle
+function initPuzzle(type) {
+    puzzleGame.currentPuzzle = type;
+    puzzleGame.startTime = Date.now();
+    puzzleGame.score = 100;
+    puzzleGame.hintsUsed = 0;
+    
+    document.getElementById('puzzleSelection').style.display = 'none';
+    document.getElementById('puzzleGame').style.display = 'block';
+    
+    // Start timer
+    puzzleGame.timer = setInterval(updatePuzzleTimer, 1000);
+    
+    switch(type) {
+        case 'wordsearch':
+            initWordSearch();
+            break;
+        case 'crossword':
+            initCrossword();
+            break;
+        case 'sudoku':
+            initSudoku();
+            break;
+    }
+}
+
+// Update puzzle timer
+function updatePuzzleTimer() {
+    const elapsed = Math.floor((Date.now() - puzzleGame.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('puzzleTimer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Word search puzzle
+function initWordSearch() {
+    const words = ['MINDFUL', 'PEACEFUL', 'GRATEFUL', 'BREATHE', 'CALM'];
+    const gridSize = 10;
+    const grid = [];
+    
+    // Create empty grid
+    for (let i = 0; i < gridSize; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = '';
+        }
+    }
+    
+    // Place words
+    words.forEach(word => {
+        let placed = false;
+        while (!placed) {
+            const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+            const row = Math.floor(Math.random() * gridSize);
+            const col = Math.floor(Math.random() * gridSize);
+            
+            if (canPlaceWord(grid, word, row, col, direction)) {
+                placeWord(grid, word, row, col, direction);
+                placed = true;
+            }
+        }
+    });
+    
+    // Fill empty cells
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            if (grid[i][j] === '') {
+                grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            }
+        }
+    }
+    
+    // Display puzzle
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <h3>Find these words:</h3>
+        <div class="word-list">${words.map(w => `<span class="word-item" data-word="${w}">${w}</span>`).join(' ')}</div>
+        <div class="word-search-grid">
+            ${grid.map((row, i) => 
+                row.map((cell, j) => `<div class="grid-cell" data-row="${i}" data-col="${j}">${cell}</div>`).join('')
+            ).join('')}
+        </div>
+    `;
+    
+    // Add click handlers
+    let selecting = false;
+    let selectedCells = [];
+    
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.addEventListener('mousedown', () => {
+            selecting = true;
+            selectedCells = [cell];
+            cell.classList.add('selecting');
+        });
+        
+        cell.addEventListener('mouseenter', () => {
+            if (selecting) {
+                selectedCells.push(cell);
+                cell.classList.add('selecting');
+            }
+        });
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (selecting) {
+            checkWordSelection(selectedCells, words);
+            selectedCells.forEach(cell => cell.classList.remove('selecting'));
+            selecting = false;
+            selectedCells = [];
+        }
+    });
+}
+
+// Helper functions for word search
+function canPlaceWord(grid, word, row, col, direction) {
+    if (direction === 'horizontal') {
+        if (col + word.length > grid[0].length) return false;
+        for (let i = 0; i < word.length; i++) {
+            if (grid[row][col + i] !== '' && grid[row][col + i] !== word[i]) return false;
+        }
+    } else {
+        if (row + word.length > grid.length) return false;
+        for (let i = 0; i < word.length; i++) {
+            if (grid[row + i][col] !== '' && grid[row + i][col] !== word[i]) return false;
+        }
+    }
+    return true;
+}
+
+function placeWord(grid, word, row, col, direction) {
+    if (direction === 'horizontal') {
+        for (let i = 0; i < word.length; i++) {
+            grid[row][col + i] = word[i];
+        }
+    } else {
+        for (let i = 0; i < word.length; i++) {
+            grid[row + i][col] = word[i];
+        }
+    }
+}
+
+function checkWordSelection(cells, words) {
+    const selected = cells.map(cell => cell.textContent).join('');
+    const reversed = selected.split('').reverse().join('');
+    
+    words.forEach(word => {
+        if (selected === word || reversed === word) {
+            cells.forEach(cell => cell.classList.add('found'));
+            document.querySelector(`[data-word="${word}"]`).classList.add('found');
+            puzzleGame.score += 20;
+            checkPuzzleComplete();
+        }
+    });
+}
+
+// Crossword puzzle
+function initCrossword() {
+    const clues = {
+        across: [
+            { number: 1, clue: "State of being calm", answer: "PEACE", row: 0, col: 0 },
+            { number: 3, clue: "Mindfulness practice", answer: "MEDITATION", row: 2, col: 0 },
+            { number: 5, clue: "Feeling of joy", answer: "HAPPY", row: 4, col: 2 }
+        ],
+        down: [
+            { number: 1, clue: "To inhale and exhale", answer: "BREATHE", row: 0, col: 0 },
+            { number: 2, clue: "Thankful feeling", answer: "GRATEFUL", row: 0, col: 4 },
+            { number: 4, clue: "Opposite of stressed", answer: "RELAXED", row: 1, col: 7 }
+        ]
+    };
+    
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <div class="crossword-container">
+            <div class="crossword-grid">
+                <!-- Grid will be generated here -->
+            </div>
+            <div class="crossword-clues">
+                <h4>Across</h4>
+                ${clues.across.map(c => `<div class="clue">${c.number}. ${c.clue}</div>`).join('')}
+                <h4>Down</h4>
+                ${clues.down.map(c => `<div class="clue">${c.number}. ${c.clue}</div>`).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Create grid (simplified)
+    const gridHTML = [];
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 12; j++) {
+            gridHTML.push(`<input type="text" class="crossword-cell" data-row="${i}" data-col="${j}" maxlength="1">`);
+        }
+    }
+    document.querySelector('.crossword-grid').innerHTML = gridHTML.join('');
+}
+
+// Sudoku puzzle
+function initSudoku() {
+    const puzzle = [
+        [5,3,0,0,7,0,0,0,0],
+        [6,0,0,1,9,5,0,0,0],
+        [0,9,8,0,0,0,0,6,0],
+        [8,0,0,0,6,0,0,0,3],
+        [4,0,0,8,0,3,0,0,1],
+        [7,0,0,0,2,0,0,0,6],
+        [0,6,0,0,0,0,2,8,0],
+        [0,0,0,4,1,9,0,0,5],
+        [0,0,0,0,8,0,0,7,9]
+    ];
+    
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <h3>Fill in the numbers 1-9</h3>
+        <div class="sudoku-grid">
+            ${puzzle.map((row, i) => 
+                row.map((cell, j) => `
+                    <input type="number" 
+                           class="sudoku-cell ${cell !== 0 ? 'fixed' : ''}" 
+                           data-row="${i}" 
+                           data-col="${j}" 
+                           value="${cell || ''}" 
+                           ${cell !== 0 ? 'readonly' : ''}
+                           min="1" 
+                           max="9">
+                `).join('')
+            ).join('')}
+        </div>
+    `;
+    
+    // Add input validation
+    document.querySelectorAll('.sudoku-cell:not(.fixed)').forEach(cell => {
+        cell.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (val < 1 || val > 9) {
+                e.target.value = '';
+            }
+            checkSudokuComplete();
+        });
+    });
+}
+
+// Check if puzzle is complete
+function checkPuzzleComplete() {
+    const foundWords = document.querySelectorAll('.word-item.found').length;
+    const totalWords = document.querySelectorAll('.word-item').length;
+    
+    if (foundWords === totalWords) {
+        completePuzzle();
+    }
+}
+
+function checkSudokuComplete() {
+    const cells = document.querySelectorAll('.sudoku-cell');
+    let complete = true;
+    
+    cells.forEach(cell => {
+        if (!cell.value) complete = false;
+    });
+    
+    if (complete) {
+        // Validate solution (simplified)
+        completePuzzle();
+    }
+}
+
+// Complete puzzle
+function completePuzzle() {
+    clearInterval(puzzleGame.timer);
+    
+    const elapsed = Math.floor((Date.now() - puzzleGame.startTime) / 1000);
+    const finalScore = Math.max(0, puzzleGame.score - puzzleGame.hintsUsed * 10);
+    
+    app.data.puzzlesCompleted = (app.data.puzzlesCompleted || 0) + 1;
+    app.saveData();
+    app.checkAchievements();
+    
+    document.getElementById('puzzleContainer').innerHTML = `
+        <div class="puzzle-complete">
+            <h2>🎉 Puzzle Complete!</h2>
+            <div class="complete-stats">
+                <div>Time: ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}</div>
+                <div>Score: ${finalScore}</div>
+                <div>Hints Used: ${puzzleGame.hintsUsed}</div>
+            </div>
+            <button class="btn btn-primary" onclick="resetPuzzle()">Play Another</button>
+        </div>
+    `;
+}
+
+// Reset puzzle
+function resetPuzzle() {
+    puzzleGame = {
+        currentPuzzle: null,
+        startTime: null,
+        score: 0,
+        hintsUsed: 0,
+        timer: null
+    };
+    
+    document.getElementById('puzzleSelection').style.display = 'block';
+    document.getElementById('puzzleGame').style.display = 'none';
+}
+
+// Get hint
+function getHint() {
+    puzzleGame.hintsUsed++;
+    puzzleGame.score -= 10;
+    
+    // Provide hint based on puzzle type
+    switch(puzzleGame.currentPuzzle) {
+        case 'wordsearch':
+            // Highlight first letter of unfound word
+            const unfound = document.querySelector('.word-item:not(.found)');
+            if (unfound) {
+                alert(`Look for "${unfound.dataset.word[0]}" to start finding "${unfound.dataset.word}"`);
+            }
+            break;
+        case 'crossword':
+            alert('Try filling in the shorter words first!');
+            break;
+        case 'sudoku':
+            alert('Look for rows, columns, or boxes with only one missing number!');
+            break;
+    }
+}
+
+// Navigation functions
+function showPage(page) {
+    // Hide all pages
+    document.querySelectorAll('.hero-section, .mood-tracker, .breathing-exercise, .journal, .insights, .resources, .puzzle-feature').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Show selected page
+    switch(page) {
+        case 'home':
+            document.querySelector('.hero-section').style.display = 'block';
+            app.updateStats();
+            app.displayAchievements();
+            break;
+        case 'mood':
+            document.querySelector('.mood-tracker').style.display = 'block';
+            app.updateDateTime();
+            break;
+        case 'breathe':
+            document.querySelector('.breathing-exercise').style.display = 'block';
+            break;
+        case 'journal':
+            document.querySelector('.journal').style.display = 'block';
+            app.loadJournalPrompt();
+            app.loadRecentEntries();
+            break;
+        case 'insights':
+            document.querySelector('.insights').style.display = 'block';
+            app.updateInsights();
+            break;
+        case 'resources':
+            document.querySelector('.resources').style.display = 'block';
+            break;
+        case 'puzzle':
+            document.querySelector('.puzzle-feature').style.display = 'block';
+            break;
+    }
+}
+
+// Pause breathing function
+function pauseBreathing() {
+    if (app) {
+        app.pauseBreathing();
+    }
+}
+
+// Initialize app when page loads
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+    app = new MindfulMeApp();
+    
+    // Show home page by default
+    showPage('home');
+});
+
+
+
     
