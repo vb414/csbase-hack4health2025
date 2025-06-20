@@ -837,4 +837,754 @@ class MindfulMeApp {
         // Initialize chart
         this.updateMoodChart();
     }
+
+    // Get last 7 days moods
+    getLast7DaysMoods() {
+        const days = [];
+        const today = new Date();
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toDateString();
+            
+            const dayMoods = this.data.moods.filter(mood => 
+                new Date(mood.date).toDateString() === dateStr
+            );
+            
+            days.push({
+                date: date,
+                moods: dayMoods,
+                average: dayMoods.length > 0 
+                    ? dayMoods.reduce((sum, m) => sum + m.value, 0) / dayMoods.length 
+                    : 0,
+                count: dayMoods.length
+            });
+        }
+        
+        return days;
+    }
+
+    // Calculate mood trend
+    calculateMoodTrend(days) {
+        const firstHalf = days.slice(0, 3);
+        const secondHalf = days.slice(4, 7);
+        
+        const firstAvg = firstHalf.reduce((sum, d) => sum + d.average, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, d) => sum + d.average, 0) / secondHalf.length;
+        
+        return Math.round(((secondAvg - firstAvg) / firstAvg) * 100);
+    }
+
+    // Get best day
+    getBestDay(days) {
+        const bestDay = days.reduce((best, day) => 
+            day.average > best.average ? day : best
+        );
+        return bestDay.date.toLocaleDateString('en-US', { weekday: 'short' });
+    }
+
+    // Get consistency score
+    getConsistencyScore() {
+        const last7Days = new Date();
+        last7Days.setDate(last7Days.getDate() - 7);
+        
+        const daysWithEntries = new Set();
+        this.data.moods.forEach(mood => {
+            const moodDate = new Date(mood.date);
+            if (moodDate >= last7Days) {
+                daysWithEntries.add(moodDate.toDateString());
+            }
+        });
+        
+        return Math.round((daysWithEntries.size / 7) * 100);
+    }
+
+    // Get factor icon
+    getFactorIcon(factor) {
+        const icons = {
+            'Sleep': '😴',
+            'Exercise': '🏃',
+            'Diet': '🥗',
+            'Social': '👥',
+            'Work': '💼',
+            'Weather': '☀️',
+            'Health': '❤️',
+            'Stress': '😰'
+        };
+        return icons[factor] || '📌';
+    }
+
+    // Update mood chart
+    updateMoodChart() {
+        const canvas = document.getElementById('moodChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const last7Days = this.getLast7DaysMoods();
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded');
+            canvas.parentElement.innerHTML = '<p>Chart loading error. Please refresh.</p>';
+            return;
+        }
+        
+        // Destroy existing chart if any
+        if (window.moodChartInstance) {
+            window.moodChartInstance.destroy();
+        }
+        
+        try {
+            window.moodChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days.map(d => d.date.toLocaleDateString('en-US', { weekday: 'short' })),
+                    datasets: [{
+                        label: 'Average Mood',
+                        data: last7Days.map(d => d.average || null),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dayData = last7Days[context.dataIndex];
+                                    return `Mood: ${context.parsed.y.toFixed(1)} (${dayData.count} entries)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const emojis = ['', '😢', '😟', '😐', '🙂', '😊'];
+                                    return emojis[value] || value;
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(99, 102, 241, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(99, 102, 241, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Chart initialization error:', error);
+            canvas.parentElement.innerHTML = '<p>Unable to display chart. Please try again.</p>';
+        }
+    }
+
+    // Export data
+    exportData() {
+        const dataStr = JSON.stringify(this.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `mindfulme_data_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+}
+
+// Puzzle game implementation
+let puzzleGame = {
+    currentPuzzle: null,
+    startTime: null,
+    score: 0,
+    hintsUsed: 0,
+    timer: null
+};
+
+// Initialize puzzle
+function initPuzzle(type) {
+    puzzleGame.currentPuzzle = type;
+    puzzleGame.startTime = Date.now();
+    puzzleGame.score = 100;
+    puzzleGame.hintsUsed = 0;
+    
+    document.getElementById('puzzleSelection').style.display = 'none';
+    document.getElementById('puzzleGame').style.display = 'block';
+    
+    // Start timer
+    puzzleGame.timer = setInterval(updatePuzzleTimer, 1000);
+    
+    switch(type) {
+        case 'wordsearch':
+            initWordSearch();
+            break;
+        case 'crossword':
+            initCrossword();
+            break;
+        case 'sudoku':
+            initSudoku();
+            break;
+    }
+}
+
+// Update puzzle timer
+function updatePuzzleTimer() {
+    const elapsed = Math.floor((Date.now() - puzzleGame.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('puzzleTimer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Word search puzzle
+function initWordSearch() {
+    const words = ['MINDFUL', 'PEACEFUL', 'GRATEFUL', 'BREATHE', 'CALM'];
+    const gridSize = 10;
+    const grid = [];
+    
+    // Create empty grid
+    for (let i = 0; i < gridSize; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = '';
+        }
+    }
+    
+    // Place words
+    words.forEach(word => {
+        let placed = false;
+        while (!placed) {
+            const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+            const row = Math.floor(Math.random() * gridSize);
+            const col = Math.floor(Math.random() * gridSize);
+            
+            if (canPlaceWord(grid, word, row, col, direction)) {
+                placeWord(grid, word, row, col, direction);
+                placed = true;
+            }
+        }
+    });
+    
+    // Fill empty cells
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            if (grid[i][j] === '') {
+                grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            }
+        }
+    }
+    
+    // Display puzzle
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <h3>Find these words:</h3>
+        <div class="word-list">${words.map(w => `<span class="word-item" data-word="${w}">${w}</span>`).join(' ')}</div>
+        <div class="word-search-grid">
+            ${grid.map((row, i) => 
+                row.map((cell, j) => `<div class="grid-cell" data-row="${i}" data-col="${j}">${cell}</div>`).join('')
+            ).join('')}
+        </div>
+    `;
+    
+    // Add click handlers
+    let selecting = false;
+    let selectedCells = [];
+    
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.addEventListener('mousedown', () => {
+            selecting = true;
+            selectedCells = [cell];
+            cell.classList.add('selecting');
+        });
+        
+        cell.addEventListener('mouseenter', () => {
+            if (selecting) {
+                selectedCells.push(cell);
+                cell.classList.add('selecting');
+            }
+        });
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (selecting) {
+            checkWordSelection(selectedCells, words);
+            selectedCells.forEach(cell => cell.classList.remove('selecting'));
+            selecting = false;
+            selectedCells = [];
+        }
+    });
+}
+
+// Helper functions for word search
+function canPlaceWord(grid, word, row, col, direction) {
+    if (direction === 'horizontal') {
+        if (col + word.length > grid[0].length) return false;
+        for (let i = 0; i < word.length; i++) {
+            if (grid[row][col + i] !== '' && grid[row][col + i] !== word[i]) return false;
+        }
+    } else {
+        if (row + word.length > grid.length) return false;
+        for (let i = 0; i < word.length; i++) {
+            if (grid[row + i][col] !== '' && grid[row + i][col] !== word[i]) return false;
+        }
+    }
+    return true;
+}
+
+function placeWord(grid, word, row, col, direction) {
+    if (direction === 'horizontal') {
+        for (let i = 0; i < word.length; i++) {
+            grid[row][col + i] = word[i];
+        }
+    } else {
+        for (let i = 0; i < word.length; i++) {
+            grid[row + i][col] = word[i];
+        }
+    }
+}
+
+function checkWordSelection(cells, words) {
+    const selected = cells.map(cell => cell.textContent).join('');
+    const reversed = selected.split('').reverse().join('');
+    
+    words.forEach(word => {
+        if (selected === word || reversed === word) {
+            cells.forEach(cell => cell.classList.add('found'));
+            document.querySelector(`[data-word="${word}"]`).classList.add('found');
+            puzzleGame.score += 20;
+            checkPuzzleComplete();
+        }
+    });
+}
+
+// Crossword puzzle
+function initCrossword() {
+    const grid = [
+        [1, 'P', 'E', 'A', 'C', 'E', null, null, null, null],
+        ['R', null, null, null, 'A', null, null, 2, 'R', null],
+        [3, 'M', 'E', 'D', 'I', 'T', 'A', 'T', 'I', 'O'],
+        ['A', null, null, null, 'M', null, null, 'H', null, 'N'],
+        ['T', null, 4, 'H', 'A', 'P', 'P', 'Y', null, null],
+        ['H', null, null, null, 'T', null, null, null, null, null],
+        ['E', null, null, null, 'E', null, null, null, null, null],
+        [null, null, null, null, null, null, null, null, null, null]
+    ];
+    
+    const clues = {
+        across: [
+            { number: 1, text: "State of being calm (5)" },
+            { number: 3, text: "Mindfulness practice (10)" },
+            { number: 4, text: "Feeling of joy (5)" }
+        ],
+        down: [
+            { number: 1, text: "To inhale and exhale (7)" },
+            { number: 2, text: "Thankful feeling (8)" }
+        ]
+    };
+    
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <div class="crossword-container">
+            <div class="crossword-grid-wrapper">
+                <div class="crossword-grid">
+                    ${grid.map((row, i) => 
+                        row.map((cell, j) => {
+                            if (cell === null) {
+                                return `<div class="crossword-cell black"></div>`;
+                            } else if (typeof cell === 'number') {
+                                return `
+                                    <div style="position: relative;">
+                                        <span class="crossword-number">${cell}</span>
+                                        <input type="text" 
+                                               class="crossword-cell" 
+                                               data-row="${i}" 
+                                               data-col="${j}" 
+                                               maxlength="1"
+                                               onkeydown="handleCrosswordNav(event, ${i}, ${j})">
+                                    </div>
+                                `;
+                            } else if (typeof cell === 'string') {
+                                return `
+                                    <input type="text" 
+                                           class="crossword-cell" 
+                                           data-row="${i}" 
+                                           data-col="${j}" 
+                                           data-answer="${cell}"
+                                           maxlength="1"
+                                           onkeydown="handleCrosswordNav(event, ${i}, ${j})">
+                                `;
+                            }
+                        }).join('')
+                    ).join('')}
+                </div>
+            </div>
+            
+            <div class="crossword-clues">
+                <h4>Across</h4>
+                ${clues.across.map(c => 
+                    `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
+                ).join('')}
+                
+                <h4>Down</h4>
+                ${clues.down.map(c => 
+                    `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
+                ).join('')}
+                
+                <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="checkCrossword()">
+                    Check Answers
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add input event listeners
+    document.querySelectorAll('.crossword-cell:not(.black)').forEach(cell => {
+        cell.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    });
+}
+
+// Handle crossword navigation
+function handleCrosswordNav(event, row, col) {
+    const key = event.key;
+    let nextCell;
+    
+    switch(key) {
+        case 'ArrowUp':
+            nextCell = document.querySelector(`[data-row="${row-1}"][data-col="${col}"]`);
+            break;
+        case 'ArrowDown':
+        case 'Enter':
+            nextCell = document.querySelector(`[data-row="${row+1}"][data-col="${col}"]`);
+            break;
+        case 'ArrowLeft':
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${col-1}"]`);
+            break;
+        case 'ArrowRight':
+        case 'Tab':
+            if (key === 'Tab') event.preventDefault();
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${col+1}"]`);
+            break;
+    }
+    
+    if (nextCell && !nextCell.classList.contains('black')) {
+        nextCell.focus();
+    }
+}
+
+// Check crossword answers
+function checkCrossword() {
+    let correct = 0;
+    let total = 0;
+    
+    document.querySelectorAll('.crossword-cell[data-answer]').forEach(cell => {
+        total++;
+        if (cell.value.toUpperCase() === cell.dataset.answer) {
+            cell.style.backgroundColor = 'rgba(16, 185, 129, 0.3)';
+            correct++;
+        } else if (cell.value) {
+            cell.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+        }
+    });
+    
+    if (correct === total) {
+        completePuzzle();
+    } else {
+        setTimeout(() => {
+            document.querySelectorAll('.crossword-cell[data-answer]').forEach(cell => {
+                cell.style.backgroundColor = '';
+            });
+        }, 2000);
+    }
+}
+
+// Sudoku puzzle
+function initSudoku() {
+    const puzzle = [
+        [5,3,0,0,7,0,0,0,0],
+        [6,0,0,1,9,5,0,0,0],
+        [0,9,8,0,0,0,0,6,0],
+        [8,0,0,0,6,0,0,0,3],
+        [4,0,0,8,0,3,0,0,1],
+        [7,0,0,0,2,0,0,0,6],
+        [0,6,0,0,0,0,2,8,0],
+        [0,0,0,4,1,9,0,0,5],
+        [0,0,0,0,8,0,0,7,9]
+    ];
+    
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <h3>Fill in the numbers 1-9</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Each row, column, and 3x3 box must contain all digits 1-9</p>
+        <div class="sudoku-grid">
+            <div class="sudoku-row-divider row-3"></div>
+            <div class="sudoku-row-divider row-6"></div>
+            ${puzzle.map((row, i) => 
+                row.map((cell, j) => `
+                    <input type="number" 
+                           class="sudoku-cell ${cell !== 0 ? 'fixed' : ''}" 
+                           data-row="${i}" 
+                           data-col="${j}" 
+                           value="${cell || ''}" 
+                           ${cell !== 0 ? 'readonly' : ''}
+                           min="1" 
+                           max="9"
+                           onkeydown="handleSudokuNav(event, ${i}, ${j})"
+                           oninput="validateSudokuInput(this, ${i}, ${j})">
+                `).join('')
+            ).join('')}
+        </div>
+        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="checkSudokuComplete()">
+            Check Solution
+        </button>
+    `;
+}
+
+// Handle sudoku navigation
+function handleSudokuNav(event, row, col) {
+    const key = event.key;
+    let nextCell;
+    
+    // Prevent default for arrow keys
+    if (key.startsWith('Arrow')) {
+        event.preventDefault();
+    }
+    
+    switch(key) {
+        case 'ArrowUp':
+            nextCell = document.querySelector(`[data-row="${Math.max(0, row-1)}"][data-col="${col}"]`);
+            break;
+        case 'ArrowDown':
+            nextCell = document.querySelector(`[data-row="${Math.min(8, row+1)}"][data-col="${col}"]`);
+            break;
+        case 'ArrowLeft':
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${Math.max(0, col-1)}"]`);
+            break;
+        case 'ArrowRight':
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${Math.min(8, col+1)}"]`);
+            break;
+    }
+    
+    if (nextCell && !nextCell.classList.contains('fixed')) {
+        nextCell.focus();
+        nextCell.select();
+    }
+}
+
+// Validate sudoku input
+function validateSudokuInput(cell, row, col) {
+    const val = parseInt(cell.value);
+    
+    // Remove any non-numeric or invalid input
+    if (!val || val < 1 || val > 9) {
+        cell.value = '';
+        cell.classList.remove('error');
+        return;
+    }
+    
+    // Check for conflicts
+    let hasConflict = false;
+    
+    // Check row
+    document.querySelectorAll(`[data-row="${row}"]`).forEach(c => {
+        if (c !== cell && c.value === cell.value) {
+            hasConflict = true;
+        }
+    });
+    
+    // Check column
+    document.querySelectorAll(`[data-col="${col}"]`).forEach(c => {
+        if (c !== cell && c.value === cell.value) {
+            hasConflict = true;
+        }
+    });
+    
+    // Check 3x3 box
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let i = boxRow; i < boxRow + 3; i++) {
+        for (let j = boxCol; j < boxCol + 3; j++) {
+            const c = document.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+            if (c !== cell && c.value === cell.value) {
+                hasConflict = true;
+            }
+        }
+    }
+    
+    if (hasConflict) {
+        cell.classList.add('error');
+    } else {
+        cell.classList.remove('error');
+    }
+}
+
+// Check if puzzle is complete
+function checkPuzzleComplete() {
+    const foundWords = document.querySelectorAll('.word-item.found').length;
+    const totalWords = document.querySelectorAll('.word-item').length;
+    
+    if (foundWords === totalWords) {
+        completePuzzle();
+    }
+}
+
+function checkSudokuComplete() {
+    const cells = document.querySelectorAll('.sudoku-cell');
+    let complete = true;
+    let hasErrors = false;
+    
+    cells.forEach(cell => {
+        if (!cell.value) complete = false;
+        if (cell.classList.contains('error')) hasErrors = false;
+    });
+    
+    if (complete && !hasErrors) {
+        // Validate solution (simplified)
+        completePuzzle();
+    } else {
+        alert('Please complete the puzzle and fix any errors (highlighted in red)');
+    }
+}
+
+// Complete puzzle
+function completePuzzle() {
+    clearInterval(puzzleGame.timer);
+    
+    const elapsed = Math.floor((Date.now() - puzzleGame.startTime) / 1000);
+    const finalScore = Math.max(0, puzzleGame.score - puzzleGame.hintsUsed * 10);
+    
+    app.data.puzzlesCompleted = (app.data.puzzlesCompleted || 0) + 1;
+    app.saveData();
+    app.checkAchievements();
+    
+    document.getElementById('puzzleContainer').innerHTML = `
+        <div class="puzzle-complete">
+            <h2>🎉 Puzzle Complete!</h2>
+            <div class="complete-stats">
+                <div>Time: ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}</div>
+                <div>Score: ${finalScore}</div>
+                <div>Hints Used: ${puzzleGame.hintsUsed}</div>
+            </div>
+            <button class="btn btn-primary" onclick="resetPuzzle()">Play Another</button>
+        </div>
+    `;
+}
+
+// Reset puzzle
+function resetPuzzle() {
+    puzzleGame = {
+        currentPuzzle: null,
+        startTime: null,
+        score: 0,
+        hintsUsed: 0,
+        timer: null
+    };
+    
+    document.getElementById('puzzleSelection').style.display = 'block';
+    document.getElementById('puzzleGame').style.display = 'none';
+}
+
+// Get hint
+function getHint() {
+    puzzleGame.hintsUsed++;
+    puzzleGame.score -= 10;
+    
+    // Provide hint based on puzzle type
+    switch(puzzleGame.currentPuzzle) {
+        case 'wordsearch':
+            // Highlight first letter of unfound word
+            const unfound = document.querySelector('.word-item:not(.found)');
+            if (unfound) {
+                alert(`Look for "${unfound.dataset.word[0]}" to start finding "${unfound.dataset.word}"`);
+            }
+            break;
+        case 'crossword':
+            alert('Try filling in the shorter words first!');
+            break;
+        case 'sudoku':
+            alert('Look for rows, columns, or boxes with only one missing number!');
+            break;
+    }
+}
+
+// Navigation functions
+function showPage(page) {
+    // Hide all pages
+    document.querySelectorAll('.hero-section, .mood-tracker, .breathing-exercise, .journal, .insights, .resources, .puzzle-feature').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+    
+    // Show selected page
+    switch(page) {
+        case 'home':
+            document.querySelector('.hero-section').style.display = 'block';
+            app.updateStats();
+            app.displayAchievements();
+            break;
+        case 'mood':
+            document.querySelector('.mood-tracker').style.display = 'block';
+            app.updateDateTime();
+            break;
+        case 'breathe':
+            document.querySelector('.breathing-exercise').style.display = 'block';
+            break;
+        case 'journal':
+            document.querySelector('.journal').style.display = 'block';
+            app.loadJournalPrompt();
+            app.loadRecentEntries();
+            break;
+        case 'insights':
+            document.querySelector('.insights').style.display = 'block';
+            app.updateInsights();
+            break;
+        case 'resources':
+            document.querySelector('.resources').style.display = 'block';
+            break;
+        case 'puzzle':
+            document.querySelector('.puzzle-feature').style.display = 'block';
+            break;
+    }
+}
+
+// Pause breathing function
+function pauseBreathing() {
+    if (app) {
+        app.pauseBreathing();
+    }
+}
+
+// Initialize app when page loads
+let app;
+document.addEventListener('DOMContentLoaded', () => {
+    app = new MindfulMeApp();
+    
+    // Show home page by default
+    showPage('home');
+});
+
     
