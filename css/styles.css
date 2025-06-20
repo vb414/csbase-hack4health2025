@@ -1065,11 +1065,6 @@ html {
     background: rgba(99, 102, 241, 0.1);
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    transition: all
-.word-item {
-    background: rgba(99, 102, 241, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
     transition: all 0.3s ease;
 }
 
@@ -1077,6 +1072,191 @@ html {
     background: rgba(16, 185, 129, 0.3);
     color: #10b981;
     text-decoration: line-through;
+}
+
+/* Better Crossword styles */
+.crossword-container {
+    display: flex;
+    gap: 3rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.crossword-grid-wrapper {
+    position: relative;
+}
+
+.crossword-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 35px);
+    grid-template-rows: repeat(8, 35px);
+    gap: 0;
+    background: #333;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+.crossword-cell {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #555;
+    background: rgba(30, 41, 59, 0.9);
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    padding: 0;
+    position: relative;
+}
+
+.crossword-cell:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.crossword-cell.black {
+    background: #1a1a1a;
+    pointer-events: none;
+}
+
+.crossword-number {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    font-size: 0.7rem;
+    color: var(--primary);
+    font-weight: bold;
+    line-height: 1;
+}
+
+.crossword-clues {
+    max-width: 300px;
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 15px;
+}
+
+.crossword-clues h4 {
+    color: var(--primary);
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+}
+
+.clue {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.clue-number {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+/* Better Sudoku styles */
+.sudoku-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 40px);
+    grid-template-rows: repeat(9, 40px);
+    gap: 0;
+    margin: 2rem auto;
+    width: fit-content;
+    background: #333;
+    padding: 2px;
+    border-radius: 8px;
+    position: relative;
+}
+
+/* Thick borders for 3x3 sections */
+.sudoku-grid::before,
+.sudoku-grid::after {
+    content: '';
+    position: absolute;
+    background: #666;
+}
+
+.sudoku-grid::before {
+    width: 2px;
+    height: 100%;
+    left: 33.33%;
+    top: 0;
+}
+
+.sudoku-grid::after {
+    width: 2px;
+    height: 100%;
+    left: 66.66%;
+    top: 0;
+}
+
+.sudoku-row-divider {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #666;
+    left: 0;
+}
+
+.sudoku-row-divider.row-3 {
+    top: 33.33%;
+}
+
+.sudoku-row-divider.row-6 {
+    top: 66.66%;
+}
+
+.sudoku-cell {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #444;
+    background: rgba(30, 41, 59, 0.9);
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.sudoku-cell:focus {
+    outline: none;
+    background: rgba(99, 102, 241, 0.3);
+    border-color: var(--primary);
+    transform: scale(1.05);
+    z-index: 1;
+}
+
+.sudoku-cell.fixed {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.sudoku-cell.error {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.sudoku-cell:hover:not(.fixed) {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+/* Number input styling */
+.sudoku-cell::-webkit-inner-spin-button,
+.sudoku-cell::-webkit-outer-spin-button,
+.crossword-cell::-webkit-inner-spin-button,
+.crossword-cell::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.sudoku-cell[type=number],
+.crossword-cell[type=text] {
+    -moz-appearance: textfield;
 }
 
 /* Mobile Responsive */
@@ -1160,6 +1340,33 @@ html {
         height: 30px;
         font-size: 0.9rem;
     }
+    
+    .crossword-grid {
+        grid-template-columns: repeat(10, 30px);
+        grid-template-rows: repeat(8, 30px);
+    }
+    
+    .crossword-cell {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .sudoku-grid {
+        grid-template-columns: repeat(9, 35px);
+        grid-template-rows: repeat(9, 35px);
+    }
+    
+    .sudoku-cell {
+        width: 35px;
+        height: 35px;
+        font-size: 1.1rem;
+    }
+    
+    .crossword-container {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
 /* Milestone popup */
@@ -1210,80 +1417,6 @@ html {
     background: var(--primary);
     border-radius: 5px;
     transition: width 0.1s linear;
-}
-
-/* Crossword styles */
-.crossword-container {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.crossword-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 40px);
-    gap: 2px;
-}
-
-.crossword-cell {
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    background: rgba(30, 41, 59, 0.5);
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    text-transform: uppercase;
-}
-
-.crossword-clues {
-    max-width: 300px;
-}
-
-.crossword-clues h4 {
-    color: var(--primary);
-    margin: 1rem 0 0.5rem;
-}
-
-.clue {
-    margin: 0.5rem 0;
-    color: var(--text-secondary);
-}
-
-/* Sudoku styles */
-.sudoku-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 50px);
-    gap: 2px;
-    margin: 2rem auto;
-    width: fit-content;
-    background: rgba(99, 102, 241, 0.3);
-    padding: 2px;
-    border-radius: 10px;
-}
-
-.sudoku-cell {
-    width: 50px;
-    height: 50px;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    background: rgba(30, 41, 59, 0.8);
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--text-primary);
-}
-
-.sudoku-cell.fixed {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-}
-
-.sudoku-cell:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.2);
 }
 
 /* Puzzle complete screen */
@@ -1451,3 +1584,5 @@ html {
     -webkit-text-fill-color: transparent;
     animation: gradient-shift 3s ease infinite;
 }
+
+/* End of styles.css */
