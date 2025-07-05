@@ -533,7 +533,6 @@ html {
     font-weight: bold;
     color: var(--primary);
 }
-
 .breathing-visual {
     display: flex;
     justify-content: center;
@@ -1064,8 +1063,7 @@ html {
 .word-item {
     background: rgba(99, 102, 241, 0.1);
     padding: 0.5rem 1rem;
-    border-radius: 20px;
-    transition: all
+    border-radius:
 .word-item {
     background: rgba(99, 102, 241, 0.1);
     padding: 0.5rem 1rem;
@@ -1269,7 +1267,7 @@ html {
     .nav-toggle {
         display: block;
     }
-
+    
     .nav-menu {
         position: fixed;
         left: -100%;
@@ -1282,64 +1280,64 @@ html {
         box-shadow: 0 10px 27px rgba(0, 0, 0, 0.5);
         padding: 2rem 0;
     }
-
+    
     .nav-menu.active {
         left: 0;
     }
-
+    
     .nav-link {
         display: block;
         padding: 1rem;
     }
-
+    
     .animated-gradient-title {
         font-size: 2.5rem;
     }
-
+    
     .feature-grid {
         grid-template-columns: 1fr;
     }
-
+    
     .mood-options {
         flex-direction: column;
     }
-
+    
     .mood-btn {
         width: 100%;
     }
-
+    
     .breathing-techniques {
         grid-template-columns: 1fr;
     }
-
+    
     .achievements-grid {
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 1rem;
     }
-
+    
     .achievement-badge {
         padding: 0.5rem;
     }
-
+    
     .achievement-icon {
         font-size: 2rem;
     }
-
+    
     .achievement-name {
         font-size: 0.8rem;
     }
-
+    
     .achievement-notification {
         right: 10px;
         left: 10px;
         max-width: none;
     }
-
+    
     .word-search-grid {
         grid-template-columns: repeat(10, 30px);
         grid-template-rows: repeat(10, 30px);
     }
-
+    
     .grid-cell {
         width: 30px;
         height: 30px;
@@ -1422,80 +1420,6 @@ html {
     background: var(--primary);
     border-radius: 5px;
     transition: width 0.1s linear;
-}
-
-/* Crossword styles */
-.crossword-container {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.crossword-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 40px);
-    gap: 2px;
-}
-
-.crossword-cell {
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    background: rgba(30, 41, 59, 0.5);
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    text-transform: uppercase;
-}
-
-.crossword-clues {
-    max-width: 300px;
-}
-
-.crossword-clues h4 {
-    color: var(--primary);
-    margin: 1rem 0 0.5rem;
-}
-
-.clue {
-    margin: 0.5rem 0;
-    color: var(--text-secondary);
-}
-
-/* Sudoku styles */
-.sudoku-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 50px);
-    gap: 2px;
-    margin: 2rem auto;
-    width: fit-content;
-    background: rgba(99, 102, 241, 0.3);
-    padding: 2px;
-    border-radius: 10px;
-}
-
-.sudoku-cell {
-    width: 50px;
-    height: 50px;
-    border: 1px solid rgba(99, 102, 241, 0.2);
-    background: rgba(30, 41, 59, 0.8);
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--text-primary);
-}
-
-.sudoku-cell.fixed {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-}
-
-.sudoku-cell:focus {
-    outline: none;
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.2);
 }
 
 /* Puzzle complete screen */
