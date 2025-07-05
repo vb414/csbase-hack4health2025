@@ -1205,66 +1205,69 @@ function initCrossword() {
     };
     
     const container = document.getElementById('puzzleContainer');
-    container.innerHTML = `
-        <div class="crossword-container">
-            <div class="crossword-grid-wrapper">
-                <div class="crossword-grid">
-                    ${grid.map((row, i) => 
-                        row.map((cell, j) => {
-                            if (cell === null) {
-                                return `<div class="crossword-cell black"></div>`;
-                            } else if (typeof cell === 'number') {
-                                return `
-                                    <div style="position: relative;">
-                                        <span class="crossword-number">${cell}</span>
-                                        <input type="text" 
-                                               class="crossword-cell" 
-                                               data-row="${i}" 
-                                               data-col="${j}" 
-                                               maxlength="1"
-                                               onkeydown="handleCrosswordNav(event, ${i}, ${j})">
-                                    </div>
-                                `;
-                            } else if (typeof cell === 'string') {
-                                return `
-                                    <input type="text" 
-                                           class="crossword-cell" 
-                                           data-row="${i}" 
-                                           data-col="${j}" 
-                                           data-answer="${cell}"
-                                           maxlength="1"
-                                           onkeydown="handleCrosswordNav(event, ${i}, ${j})">
-                                `;
-                            }
-                        }).join('')
-                    ).join('')}
-                </div>
-            </div>
-            
-            <div class="crossword-clues">
-                <h4>Across</h4>
-                ${clues.across.map(c => 
-                    `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
-                ).join('')}
-                
-                <h4>Down</h4>
-                ${clues.down.map(c => 
-                    `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
-                ).join('')}
-                
-                <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="checkCrossword()">
-                    Check Answers
-                </button>
-            </div>
-        </div>
-    `;
     
-    // Add input event listeners
-    document.querySelectorAll('.crossword-cell:not(.black)').forEach(cell => {
-        cell.addEventListener('input', (e) => {
-            e.target.value = e.target.value.toUpperCase();
+    // Build the complete HTML
+    let html = '<div class="crossword-container">';
+    html += '<div class="crossword-grid-wrapper">';
+    html += '<div class="crossword-grid">';
+    
+    // Create all cells
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            const cell = grid[i][j];
+            
+            if (cell === null) {
+                html += '<div class="crossword-cell black"></div>';
+            } else if (typeof cell === 'number') {
+                html += `<div style="position: relative;">
+                            <span class="crossword-number">${cell}</span>
+                            <input type="text" 
+                                   class="crossword-cell" 
+                                   data-row="${i}" 
+                                   data-col="${j}" 
+                                   maxlength="1"
+                                   onkeydown="handleCrosswordNav(event, ${i}, ${j})">
+                        </div>`;
+            } else if (typeof cell === 'string') {
+                html += `<input type="text" 
+                               class="crossword-cell" 
+                               data-row="${i}" 
+                               data-col="${j}" 
+                               data-answer="${cell}"
+                               maxlength="1"
+                               onkeydown="handleCrosswordNav(event, ${i}, ${j})">`;
+            }
+        }
+    }
+    
+    html += '</div></div>'; // Close crossword-grid and wrapper
+    
+    // Add clues
+    html += '<div class="crossword-clues">';
+    html += '<h4>Across</h4>';
+    html += clues.across.map(c => 
+        `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
+    ).join('');
+    
+    html += '<h4>Down</h4>';
+    html += clues.down.map(c => 
+        `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
+    ).join('');
+    
+    html += '<button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="checkCrossword()">Check Answers</button>';
+    html += '</div></div>'; // Close crossword-clues and container
+    
+    // Set the HTML all at once
+    container.innerHTML = html;
+    
+    // Add input event listeners after elements are in DOM
+    setTimeout(() => {
+        document.querySelectorAll('.crossword-cell:not(.black)').forEach(cell => {
+            cell.addEventListener('input', (e) => {
+                e.target.value = e.target.value.toUpperCase();
+            });
         });
-    });
+    }, 0);
 }
 
 // Handle crossword navigation
@@ -1336,31 +1339,36 @@ function initSudoku() {
     ];
     
     const container = document.getElementById('puzzleContainer');
-    container.innerHTML = `
-        <h3>Fill in the numbers 1-9</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Each row, column, and 3x3 box must contain all digits 1-9</p>
-        <div class="sudoku-grid">
-            <div class="sudoku-row-divider row-3"></div>
-            <div class="sudoku-row-divider row-6"></div>
-            ${puzzle.map((row, i) => 
-                row.map((cell, j) => `
-                    <input type="number" 
-                           class="sudoku-cell ${cell !== 0 ? 'fixed' : ''}" 
+    
+    // Build the complete HTML
+    let html = '<h3>Fill in the numbers 1-9</h3>';
+    html += '<p style="color: var(--text-secondary); margin-bottom: 1rem;">Each row, column, and 3x3 box must contain all digits 1-9</p>';
+    html += '<div class="sudoku-grid">';
+    html += '<div class="sudoku-row-divider row-3"></div>';
+    html += '<div class="sudoku-row-divider row-6"></div>';
+    
+    // Create all cells
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            const value = puzzle[i][j];
+            html += `<input type="number" 
+                           class="sudoku-cell ${value !== 0 ? 'fixed' : ''}" 
                            data-row="${i}" 
                            data-col="${j}" 
-                           value="${cell || ''}" 
-                           ${cell !== 0 ? 'readonly' : ''}
+                           value="${value || ''}" 
+                           ${value !== 0 ? 'readonly' : ''}
                            min="1" 
                            max="9"
                            onkeydown="handleSudokuNav(event, ${i}, ${j})"
-                           oninput="validateSudokuInput(this, ${i}, ${j})">
-                `).join('')
-            ).join('')}
-        </div>
-        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="checkSudokuComplete()">
-            Check Solution
-        </button>
-    `;
+                           oninput="validateSudokuInput(this, ${i}, ${j})">`;
+        }
+    }
+    
+    html += '</div>'; // Close sudoku-grid
+    html += '<button class="btn btn-secondary" style="margin-top: 1rem;" onclick="checkSudokuComplete()">Check Solution</button>';
+    
+    // Set the HTML all at once
+    container.innerHTML = html;
 }
 
 // Handle sudoku navigation
