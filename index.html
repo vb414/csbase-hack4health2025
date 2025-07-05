@@ -7,9 +7,6 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -28,14 +25,31 @@
                 <a href="#" class="nav-link" onclick="showPage('journal')">Journal</a>
                 <a href="#" class="nav-link" onclick="showPage('insights')">Insights</a>
                 <a href="#" class="nav-link" onclick="showPage('resources')">Resources</a>
-                <a href="#" class="nav-link" onclick="showPage('ai-insights')">AI Insights</a>
-                <a href="#" class="nav-link" onclick="showPage('meditation')">Meditation</a>
-                <a href="#" class="nav-link" onclick="showPage('community')">Community</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section / Home -->
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="animated-gradient-title">Welcome to MindfulMe</h1>
+            <p class="hero-subtitle">Your daily companion for mental wellness, self-reflection, and emotional balance</p>
+            
+            <!-- Stats Dashboard -->
+            <div class="stats-dashboard">
+                <div class="stat-card">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="streakDays">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalEntries">0</div>
+                        <div class="stat-label">Total Entries</div>
+                    </div>
 <div class="hero-section">
     <div class="container">
         <h1 class="animated-gradient-title">Welcome to MindfulMe</h1>
@@ -49,6 +63,12 @@
                     <div class="stat-number" id="streakDays">0</div>
                     <div class="stat-label">Day Streak</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon">😊</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="avgMood">-</div>
+                        <div class="stat-label">Avg Mood</div>
+                    </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📊</div>
@@ -56,6 +76,12 @@
                     <div class="stat-number" id="totalEntries">0</div>
                     <div class="stat-label">Total Entries</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🧘</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="mindfulMinutes">0</div>
+                        <div class="stat-label">Mindful Minutes</div>
+                    </div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">😊</div>
@@ -64,6 +90,10 @@
                     <div class="stat-label">Avg Mood</div>
                 </div>
             </div>
+
+            <!-- Achievements Section -->
+            <div class="achievements-section" id="achievementsContainer">
+                <!-- Achievements will be loaded here by JavaScript -->
             <div class="stat-card">
                 <div class="stat-icon">🧘</div>
                 <div class="stat-content">
@@ -73,6 +103,15 @@
             </div>
         </div>
 
+            <!-- Feature Grid -->
+            <div class="feature-grid">
+                <div class="feature-card" onclick="showPage('mood')">
+                    <div class="feature-icon bounce-animation">😊</div>
+                    <h3>Track Mood</h3>
+                    <p>Log your daily emotions and identify patterns</p>
+                    <div class="current-mood">
+                        Today's Mood: <span id="currentMoodEmoji">-</span>
+                    </div>
         <!-- Feature Grid (moved up) -->
         <div class="feature-grid">
             <div class="feature-card" onclick="showPage('mood')">
@@ -82,6 +121,39 @@
                 <div class="current-mood">
                     Today's Mood: <span id="currentMoodEmoji">-</span>
                 </div>
+                
+                <div class="feature-card" onclick="showPage('breathe')">
+                    <div class="feature-icon float-animation">🌬️</div>
+                    <h3>Breathing Exercise</h3>
+                    <p>Guided breathing for relaxation and focus</p>
+                    <div class="feature-stats">
+                        <span id="weeklyCheckIns">0</span> sessions this week
+                    </div>
+                </div>
+                
+                <div class="feature-card" onclick="showPage('journal')">
+                    <div class="feature-icon rotate-animation">📝</div>
+                    <h3>Journal</h3>
+                    <p>Express your thoughts and feelings freely</p>
+                    <div class="feature-badge">Daily Prompt</div>
+                </div>
+                
+                <div class="feature-card" onclick="showPage('insights')">
+                    <div class="feature-icon">📈</div>
+                    <h3>Insights</h3>
+                    <p>Understand your emotional patterns</p>
+                </div>
+                
+                <div class="feature-card" onclick="showPage('resources')">
+                    <div class="feature-icon">💚</div>
+                    <h3>Resources</h3>
+                    <p>Mental health support and tips</p>
+                </div>
+                
+                <div class="feature-card" onclick="showPage('puzzle')">
+                    <div class="feature-icon">🧩</div>
+                    <h3>Daily Puzzle</h3>
+                    <p>Exercise your mind with fun puzzles</p>
             </div>
             
             <div class="feature-card" onclick="showPage('breathe')">
@@ -92,7 +164,15 @@
                     <span id="weeklyCheckIns">0</span> sessions this week
                 </div>
             </div>
-            
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="btn btn-primary" onclick="showPage('mood')">
+                    <i class="fas fa-plus"></i> Quick Mood Check
+                </button>
+                <button class="btn btn-secondary" onclick="app.exportData()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
             <div class="feature-card" onclick="showPage('journal')">
                 <div class="feature-icon rotate-animation">📝</div>
                 <h3>Journal</h3>
@@ -141,9 +221,9 @@
         <div class="container">
             <h2 class="section-title">How are you feeling?</h2>
             <p class="section-subtitle">Take a moment to check in with yourself</p>
-            
+
             <div class="mood-check-time" id="moodCheckTime"></div>
-            
+
             <div class="mood-section">
                 <div class="mood-options">
                     <div class="mood-btn" onclick="app.selectMood(1)">
@@ -167,7 +247,7 @@
                         <span class="mood-label">Very Happy</span>
                     </div>
                 </div>
-                
+
                 <div class="mood-factors" style="display: none;">
                     <h3>What's influencing your mood?</h3>
                     <div class="factor-chips">
@@ -196,11 +276,11 @@
                             <i class="fas fa-brain"></i> Stress
                         </span>
                     </div>
-                    
+
                     <div class="mood-note">
                         <textarea id="moodNote" placeholder="Add a note about how you're feeling... (optional)" rows="4"></textarea>
                     </div>
-                    
+
                     <button class="btn btn-primary save-mood-btn" onclick="app.saveMood()">
                         <i class="fas fa-save"></i> Save Mood
                     </button>
@@ -214,7 +294,7 @@
         <div class="container">
             <h2 class="section-title">Breathing Exercises</h2>
             <p class="section-subtitle">Take a moment to center yourself with guided breathing</p>
-            
+
             <div class="breathing-techniques" id="breathingTechniques">
                 <div class="technique-card" onclick="app.startBreathing('478')">
                     <div class="technique-icon">🌙</div>
@@ -222,14 +302,14 @@
                     <p>For relaxation & better sleep</p>
                     <div class="technique-timing">Inhale 4 • Hold 7 • Exhale 8</div>
                 </div>
-                
+
                 <div class="technique-card" onclick="app.startBreathing('box')">
                     <div class="technique-icon">📦</div>
                     <h3>Box Breathing</h3>
                     <p>For focus & stress relief</p>
                     <div class="technique-timing">Inhale 4 • Hold 4 • Exhale 4 • Hold 4</div>
                 </div>
-                
+
                 <div class="technique-card" onclick="app.startBreathing('calm')">
                     <div class="technique-icon">🌊</div>
                     <h3>Calm Breathing</h3>
@@ -237,7 +317,7 @@
                     <div class="technique-timing">Inhale 3 • Exhale 6</div>
                 </div>
             </div>
-            
+
             <div class="breathing-container" id="breathingContainer" style="display: none;">
                 <!-- Breathing exercise content will be loaded here -->
             </div>
@@ -249,9 +329,9 @@
         <div class="container">
             <h2 class="section-title">Daily Journal</h2>
             <p class="section-subtitle">Express yourself freely and track your thoughts</p>
-            
+
             <div class="journal-prompt" id="journalPrompt"></div>
-            
+
             <div class="journal-editor">
                 <textarea id="journalContent" placeholder="Start writing your thoughts..." onkeyup="app.updateWordCount()" rows="12"></textarea>
                 <div class="journal-toolbar">
@@ -264,14 +344,14 @@
                         <span class="tag-chip" onclick="app.addTag('Growth')">Growth</span>
                     </div>
                 </div>
-                
+
                 <div class="selected-tags" id="selectedTags"></div>
-                
+
                 <button class="btn btn-primary save-journal-btn" onclick="app.saveJournal()">
                     <i class="fas fa-save"></i> Save Entry
                 </button>
             </div>
-            
+
             <div class="recent-entries">
                 <h3>Recent Entries</h3>
                 <div id="recentEntries"></div>
@@ -284,7 +364,7 @@
         <div class="container">
             <h2 class="section-title">Your Insights</h2>
             <p class="section-subtitle">Understand your patterns and track your progress</p>
-            
+
             <div id="insightsContent">
                 <div class="no-data-message">
                     <div class="no-data-icon">📊</div>
@@ -303,7 +383,7 @@
         <div class="container">
             <h2 class="section-title">Mental Health Resources</h2>
             <p class="section-subtitle">Support, information, and tools for your wellness journey</p>
-            
+
             <div class="resources-grid">
                 <div class="resource-card emergency">
                     <div class="resource-icon">🆘</div>
@@ -314,7 +394,7 @@
                         <p><strong>Emergency</strong><br>Call 911</p>
                     </div>
                 </div>
-                
+
                 <div class="resource-card">
                     <div class="resource-icon">💡</div>
                     <h3>Self-Care Tips</h3>
@@ -329,7 +409,7 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <div class="resource-card">
                     <div class="resource-icon">🧘</div>
                     <h3>Mindfulness Exercises</h3>
@@ -342,7 +422,7 @@
                         Pay attention to each step and breath</p>
                     </div>
                 </div>
-                
+
                 <div class="resource-card">
                     <div class="resource-icon">📚</div>
                     <h3>Recommended Reading</h3>
@@ -364,7 +444,7 @@
         <div class="container">
             <h2 class="animated-title">🧩 Daily Mind Puzzle</h2>
             <p class="section-subtitle">Keep your mind sharp with daily puzzles designed for mental wellness</p>
-            
+
             <!-- Puzzle Selection -->
             <div class="puzzle-selection" id="puzzleSelection">
                 <div class="puzzle-grid">
@@ -374,14 +454,14 @@
                         <p class="puzzle-difficulty easy">Easy</p>
                         <p>Find mindfulness-related words</p>
                     </div>
-                    
+
                     <div class="puzzle-card" onclick="initPuzzle('crossword')">
                         <div class="puzzle-icon">📝</div>
                         <h3>Mini Crossword</h3>
                         <p class="puzzle-difficulty medium">Medium</p>
                         <p>Mental wellness themed crossword</p>
                     </div>
-                    
+
                     <div class="puzzle-card" onclick="initPuzzle('sudoku')">
                         <div class="puzzle-icon">🔢</div>
                         <h3>Sudoku</h3>
@@ -390,7 +470,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Puzzle Game Area -->
             <div class="puzzle-game" id="puzzleGame" style="display: none;">
                 <div class="puzzle-header">
@@ -402,11 +482,11 @@
                         <i class="fas fa-lightbulb"></i> Get Hint (-10 pts)
                     </button>
                 </div>
-                
+
                 <div class="puzzle-container" id="puzzleContainer">
                     <!-- Puzzle content will be loaded here -->
                 </div>
-                
+
                 <button class="btn btn-secondary" onclick="resetPuzzle()">
                     <i class="fas fa-arrow-left"></i> Back to Puzzles
                 </button>
