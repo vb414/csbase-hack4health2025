@@ -1091,13 +1091,24 @@ html {
 }
 
 .crossword-grid {
-    display: grid;
-    grid-template-columns: repeat(10, 35px);
-    grid-template-rows: repeat(8, 35px);
+    display: grid !important;
+    grid-template-columns: repeat(10, 35px) !important;
+    grid-template-rows: repeat(8, 35px) !important;
     gap: 0;
     background: #333;
     padding: 1px;
     border-radius: 4px;
+}
+
+.crossword-grid > input.crossword-cell,
+.crossword-grid > div {
+    width: 35px;
+    height: 35px;
+}
+
+.crossword-grid > div > input.crossword-cell {
+    width: 100%;
+    height: 100%;
 }
 
 .crossword-cell {
@@ -1162,9 +1173,9 @@ html {
 
 /* Better Sudoku styles */
 .sudoku-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 40px);
-    grid-template-rows: repeat(9, 40px);
+     display: grid !important;
+    grid-template-columns: repeat(9, 40px) !important;
+    grid-template-rows: repeat(9, 40px) !important;
     gap: 0;
     margin: 2rem auto;
     width: fit-content;
@@ -1172,6 +1183,11 @@ html {
     padding: 2px;
     border-radius: 8px;
     position: relative;
+}
+
+.sudoku-grid > input.sudoku-cell {
+    width: 40px;
+    height: 40px;
 }
 
 /* Thick borders for 3x3 sections */
