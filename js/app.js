@@ -45,10 +45,10 @@ class MindfulMeApp {
         this.loadRecentEntries();
         this.checkDailyStreak();
         this.displayAchievements();
-
+        
         // Update time every minute
         setInterval(() => this.updateDateTime(), 60000);
-
+        
         // Auto-save every 5 minutes
         setInterval(() => this.saveData(), 300000);
     }
@@ -236,7 +236,7 @@ class MindfulMeApp {
             minute: '2-digit'
         };
         const dateTimeStr = now.toLocaleDateString('en-US', options);
-
+        
         const moodCheckTime = document.getElementById('moodCheckTime');
         if (moodCheckTime) {
             moodCheckTime.textContent = dateTimeStr;
@@ -249,7 +249,7 @@ class MindfulMeApp {
         const lastVisit = new Date(this.data.lastVisit);
         const todayDate = new Date(today);
         const daysDiff = Math.floor((todayDate - lastVisit) / (1000 * 60 * 60 * 24));
-
+        
         if (this.data.lastVisit !== today) {
             if (daysDiff === 1) {
                 this.data.streak++;
@@ -265,17 +265,17 @@ class MindfulMeApp {
     updateStats() {
         // Streak
         document.getElementById('streakDays').textContent = this.data.streak;
-
+        
         // Total entries
         const totalEntries = this.data.moods.length + this.data.journals.length;
         document.getElementById('totalEntries').textContent = totalEntries;
-
+        
         // Average mood
         if (this.data.moods.length > 0) {
             const avgMoodValue = this.data.moods.reduce((sum, mood) => sum + mood.value, 0) / this.data.moods.length;
             const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
             document.getElementById('avgMood').textContent = moodEmojis[Math.round(avgMoodValue) - 1];
-
+            
             // Current mood (today's last mood)
             const todayMoods = this.data.moods.filter(mood => {
                 const moodDate = new Date(mood.date).toDateString();
@@ -285,17 +285,18 @@ class MindfulMeApp {
                 document.getElementById('currentMoodEmoji').textContent = todayMoods[todayMoods.length - 1].emoji;
             }
         }
-
+        
         // Mindful minutes - Fixed calculation
         const totalMinutes = this.data.breathingSessions.reduce((sum, session) => sum + Math.floor(session.duration / 60), 0);
         document.getElementById('mindfulMinutes').textContent = totalMinutes;
-
+        
         // Weekly check-ins
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         const weeklyCheckIns = this.data.breathingSessions.filter(session => new Date(session.date) >= weekAgo).length;
         document.getElementById('weeklyCheckIns').textContent = weeklyCheckIns;
     }
+
     // Mood tracking methods
     selectMood(value) {
         this.currentMood = value;
@@ -304,7 +305,7 @@ class MindfulMeApp {
             btn.classList.remove('selected');
         });
         event.target.closest('.mood-btn').classList.add('selected');
-
+        
         // Show factors section
         document.querySelector('.mood-factors').style.display = 'block';
     }
@@ -317,7 +318,7 @@ class MindfulMeApp {
         } else {
             this.selectedFactors.push(factor);
         }
-
+        
         // Update UI
         event.target.classList.toggle('selected');
     }
@@ -328,10 +329,10 @@ class MindfulMeApp {
             alert('Please select a mood first');
             return;
         }
-
+        
         const moodNote = document.getElementById('moodNote').value;
         const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
-
+        
         const moodEntry = {
             value: this.currentMood,
             emoji: moodEmojis[this.currentMood - 1],
@@ -339,15 +340,15 @@ class MindfulMeApp {
             note: moodNote,
             date: new Date().toISOString()
         };
-
+        
         this.data.moods.push(moodEntry);
-
+        
         // Track used mood values
         if (!this.data.usedMoodValues) {
             this.data.usedMoodValues = new Set();
         }
         this.data.usedMoodValues.add(this.currentMood);
-
+        
         // Check time-based achievements
         const hour = new Date().getHours();
         if (hour < 9 && !this.achievements.earlyBird.unlocked) {
@@ -358,11 +359,11 @@ class MindfulMeApp {
             this.achievements.nightOwl.unlocked = true;
             this.showAchievement(this.achievements.nightOwl);
         }
-
+        
         this.saveData();
         this.updateStats();
         this.checkAchievements();
-
+        
         // Reset form
         this.currentMood = null;
         this.selectedFactors = [];
@@ -370,13 +371,13 @@ class MindfulMeApp {
         document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
         document.querySelectorAll('.factor-chip').forEach(chip => chip.classList.remove('selected'));
         document.querySelector('.mood-factors').style.display = 'none';
-
-        // Show success messag
+        
+        // Show success message
         const saveBtn = document.querySelector('.save-mood-btn');
         const originalText = saveBtn.textContent;
         saveBtn.textContent = '✓ Mood Saved!';
         saveBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-
+        
         setTimeout(() => {
             saveBtn.textContent = originalText;
             saveBtn.style.background = '';
@@ -392,18 +393,18 @@ class MindfulMeApp {
             'box': { inhale: 4, hold: 4, exhale: 4, name: 'Box Breathing' },
             'calm': { inhale: 3, hold: 0, exhale: 6, name: 'Calm Breathing' }
         };
-
+        
         const selected = techniques[technique];
         this.currentTechnique = selected;
         this.sessionStartTime = Date.now();
         this.cycleCount = 0;
         this.isPaused = false;
         this.totalPausedDuration = 0;
-
+        
         // Hide technique selection and show breathing exercise
         document.getElementById('breathingTechniques').style.display = 'none';
         document.getElementById('breathingContainer').style.display = 'block';
-
+        
         // Update breathing container
         document.getElementById('breathingContainer').innerHTML = `
             <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="app.backToTechniques()">
@@ -440,10 +441,10 @@ class MindfulMeApp {
                 <button class="btn btn-secondary" onclick="app.stopBreathing()">Stop</button>
             </div>
         `;
-
+        
         // Start session timer
         this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
-
+        
         // Start breathing cycle
         this.breathingCycle();
     }
@@ -461,13 +462,13 @@ class MindfulMeApp {
     // Breathing cycle
     breathingCycle() {
         if (this.isPaused) return;
-
+        
         const circle = document.getElementById('breathingCircle');
         const text = document.getElementById('breathingText');
         const counter = document.getElementById('breathingCounter');
         const progress = document.getElementById('breathingProgress');
         const progressCircle = document.querySelector('.progress-ring-circle');
-
+        
         const phases = [
             { 
                 text: 'Breathe In', 
@@ -488,29 +489,29 @@ class MindfulMeApp {
                 color: '#10b981'
             }
         ];
-
+        
         if (this.currentTechnique.hold === 0) {
             phases.splice(1, 1); // Remove hold phase for calm breathing
         }
-
+        
         let phaseIndex = 0;
-
+        
         const runPhase = () => {
             if (this.isPaused) return;
-
+            
             const phase = phases[phaseIndex];
             circle.className = 'breathing-circle ' + phase.class;
             text.textContent = phase.text;
             progress.style.background = phase.color;
-
+            
             // Animate progress circle
             const circumference = 2 * Math.PI * 90;
             progressCircle.style.strokeDasharray = circumference;
             progressCircle.style.stroke = phase.color;
-
+            
             let timeLeft = phase.duration / 1000;
             counter.textContent = timeLeft.toFixed(1);
-
+            
             // Smooth countdown
             progressCircle.style.strokeDashoffset = 0;
             progressCircle.style.transition = 'none';
@@ -518,26 +519,26 @@ class MindfulMeApp {
                 progressCircle.style.transition = `stroke-dashoffset ${phase.duration}ms linear`;
                 progressCircle.style.strokeDashoffset = circumference;
             }, 50);
-
+            
             this.breathingTimer = setInterval(() => {
                 if (this.isPaused) return;
-
+                
                 timeLeft -= 0.1;
                 if (timeLeft <= 0) {
                     clearInterval(this.breathingTimer);
-
+                    
                     phaseIndex++;
                     if (phaseIndex >= phases.length) {
                         phaseIndex = 0;
                         this.cycleCount++;
                         document.getElementById('cycleCount').textContent = this.cycleCount;
-
+                        
                         // Check for milestone
                         if (this.cycleCount % 5 === 0) {
                             this.showMilestone(this.cycleCount);
                         }
                     }
-
+                    
                     // Add small pause between phases
                     setTimeout(() => {
                         if (!this.isPaused) {
@@ -549,7 +550,7 @@ class MindfulMeApp {
                 }
             }, 100);
         };
-
+        
         runPhase();
     }
 
@@ -564,7 +565,7 @@ class MindfulMeApp {
             </div>
         `;
         document.body.appendChild(popup);
-
+        
         setTimeout(() => popup.classList.add('show'), 100);
         setTimeout(() => {
             popup.classList.remove('show');
@@ -577,7 +578,7 @@ class MindfulMeApp {
         this.isPaused = !this.isPaused;
         const pauseBtn = document.getElementById('pauseBtn');
         pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
-
+        
         if (this.isPaused) {
             this.pausedTime = Date.now();
             clearInterval(this.breathingTimer);
@@ -591,7 +592,7 @@ class MindfulMeApp {
     stopBreathing() {
         clearInterval(this.breathingTimer);
         clearInterval(this.sessionTimer);
-
+        
         if (this.sessionStartTime) {
             const duration = Math.floor((Date.now() - this.sessionStartTime - this.totalPausedDuration) / 1000);
             this.data.breathingSessions.push({
@@ -604,7 +605,7 @@ class MindfulMeApp {
             this.updateStats();
             this.checkAchievements();
         }
-
+        
         document.querySelector('.breathing-container').innerHTML = `
             <p>Great job! You completed ${this.cycleCount} cycles.</p>
             <button class="btn btn-primary" onclick="showPage('home')">Back to Home</button>
@@ -633,7 +634,7 @@ class MindfulMeApp {
             "What's been on your mind lately?",
             "How have you grown in the past month?"
         ];
-
+        
         const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
         document.getElementById('journalPrompt').textContent = randomPrompt;
     }
@@ -677,19 +678,19 @@ class MindfulMeApp {
             alert('Please write something before saving');
             return;
         }
-
+        
         const entry = {
             content: content,
             tags: [...this.currentTags],
             wordCount: content.split(/\s+/).length,
             date: new Date().toISOString()
         };
-
+        
         this.data.journals.push(entry);
         this.saveData();
         this.updateStats();
         this.checkAchievements();
-
+        
         // Reset form
         document.getElementById('journalContent').value = '';
         this.currentTags = [];
@@ -697,13 +698,13 @@ class MindfulMeApp {
         this.updateWordCount();
         this.loadJournalPrompt();
         this.loadRecentEntries();
-
+        
         // Show success
         const saveBtn = document.querySelector('.save-journal-btn');
         const originalText = saveBtn.textContent;
         saveBtn.textContent = '✓ Entry Saved!';
         saveBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-
+        
         setTimeout(() => {
             saveBtn.textContent = originalText;
             saveBtn.style.background = '';
@@ -716,16 +717,16 @@ class MindfulMeApp {
     loadRecentEntries() {
         const container = document.getElementById('recentEntries');
         const recent = this.data.journals.slice(-3).reverse();
-
+        
         if (recent.length === 0) {
             container.innerHTML = '<p class="no-entries">No journal entries yet. Start writing!</p>';
             return;
         }
-
+        
         container.innerHTML = recent.map(entry => {
             const date = new Date(entry.date);
             const preview = entry.content.substring(0, 100) + (entry.content.length > 100 ? '...' : '');
-
+            
             return `
                 <div class="recent-entry">
                     <div class="entry-date">${date.toLocaleDateString()}</div>
@@ -741,7 +742,7 @@ class MindfulMeApp {
     // Insights methods
     updateInsights() {
         const container = document.getElementById('insightsContent');
-
+        
         if (this.data.moods.length === 0) {
             container.innerHTML = `
                 <div class="no-data-message">
@@ -755,14 +756,14 @@ class MindfulMeApp {
             `;
             return;
         }
-
+        
         // Get last 7 days of data
         const last7Days = this.getLast7DaysMoods();
-
+        
         // Calculate average mood
         const avgMood = last7Days.reduce((sum, day) => sum + day.average, 0) / last7Days.length;
         const moodTrend = this.calculateMoodTrend(last7Days);
-
+        
         // Get most common factors
         const factorCounts = {};
         this.data.moods.forEach(mood => {
@@ -770,11 +771,11 @@ class MindfulMeApp {
                 factorCounts[factor] = (factorCounts[factor] || 0) + 1;
             });
         });
-
+        
         const topFactors = Object.entries(factorCounts)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 3);
-
+        
         // Count journal themes
         const tagCounts = {};
         this.data.journals.forEach(entry => {
@@ -782,7 +783,7 @@ class MindfulMeApp {
                 tagCounts[tag] = (tagCounts[tag] || 0) + 1;
             });
         });
-
+        
         container.innerHTML = `
             <div class="insights-grid">
                 <div class="insight-card">
@@ -833,7 +834,7 @@ class MindfulMeApp {
                 <canvas id="moodChart"></canvas>
             </div>
         `;
-
+        
         // Initialize chart
         this.updateMoodChart();
     }
@@ -1586,3 +1587,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show home page by default
     showPage('home');
 });
+
+// End of app.js file
+
+            
+
+        
