@@ -1,8 +1,7 @@
-// MindfulMe - Advanced Mental Health Platform
-// Version 2.0 with AI, Biometrics, and Community Features
+// MindfulMe - Complete Mental Health Companion
 
-// Advanced Data Management with Encryption
-class MindfulMeAdvanced {
+// Data Management
+class MindfulMeApp {
     constructor() {
         this.data = this.loadData();
         this.currentMood = null;
@@ -17,26 +16,12 @@ class MindfulMeAdvanced {
         this.pausedTime = 0;
         this.totalPausedDuration = 0;
         this.achievements = this.initAchievements();
-        
-        // Advanced features
-        this.aiModel = null;
-        this.encryptionKey = null;
-        this.biometricData = {
-            hrv: [],
-            voiceSentiment: [],
-            facialEmotion: []
-        };
-        this.communityPosts = [];
-        this.meditationAudio = null;
-        this.syncEnabled = false;
-        
         this.init();
     }
 
-    // Initialize advanced achievements
+    // Initialize achievements
     initAchievements() {
         return {
-            // Original achievements
             firstMood: { id: 'firstMood', name: 'First Step', description: 'Track your first mood', icon: '🌱', unlocked: false },
             weekStreak: { id: 'weekStreak', name: 'Week Warrior', description: 'Maintain a 7-day streak', icon: '🔥', unlocked: false },
             tenMoods: { id: 'tenMoods', name: 'Mood Master', description: 'Track 10 moods', icon: '📊', unlocked: false },
@@ -47,21 +32,12 @@ class MindfulMeAdvanced {
             moodExplorer: { id: 'moodExplorer', name: 'Mood Explorer', description: 'Use all 5 mood options', icon: '🎭', unlocked: false },
             consistentUser: { id: 'consistentUser', name: 'Consistent User', description: 'Use app 3 days in a row', icon: '⭐', unlocked: false },
             zenMaster: { id: 'zenMaster', name: 'Zen Master', description: '30 minutes of breathing exercises', icon: '🧘', unlocked: false },
-            puzzleSolver: { id: 'puzzleSolver', name: 'Puzzle Solver', description: 'Complete your first puzzle', icon: '🧩', unlocked: false },
-            
-            // New advanced achievements
-            aiInsights: { id: 'aiInsights', name: 'AI Enlightened', description: 'Receive 10 AI predictions', icon: '🤖', unlocked: false },
-            biometricPro: { id: 'biometricPro', name: 'Biometric Pro', description: 'Use HRV monitoring 5 times', icon: '❤️', unlocked: false },
-            communityHelper: { id: 'communityHelper', name: 'Community Helper', description: 'Support 5 community members', icon: '🤝', unlocked: false },
-            meditationMaster: { id: 'meditationMaster', name: 'Meditation Master', description: 'Complete 30 meditation sessions', icon: '🧘‍♀️', unlocked: false },
-            dataScientist: { id: 'dataScientist', name: 'Data Scientist', description: 'View correlation matrix 10 times', icon: '📊', unlocked: false },
-            safetyFirst: { id: 'safetyFirst', name: 'Safety First', description: 'Create your safety plan', icon: '🛡️', unlocked: false },
-            therapistConnected: { id: 'therapistConnected', name: 'Professional Support', description: 'Share data with therapist', icon: '👨‍⚕️', unlocked: false }
+            puzzleSolver: { id: 'puzzleSolver', name: 'Puzzle Solver', description: 'Complete your first puzzle', icon: '🧩', unlocked: false }
         };
     }
 
-    // Advanced initialization
-    async init() {
+    // Initialize app
+    init() {
         this.loadAchievements();
         this.updateStats();
         this.updateDateTime();
@@ -69,1047 +45,725 @@ class MindfulMeAdvanced {
         this.loadRecentEntries();
         this.checkDailyStreak();
         this.displayAchievements();
-        
-        // Initialize advanced features
-        await this.initializeAI();
-        await this.initializeEncryption();
-        this.initializeBiometrics();
-        this.initializePWA();
-        this.loadCommunityPosts();
-        
+
         // Update time every minute
         setInterval(() => this.updateDateTime(), 60000);
-        
+
         // Auto-save every 5 minutes
         setInterval(() => this.saveData(), 300000);
-        
-        // Sync data if enabled
-        if (this.syncEnabled) {
-            setInterval(() => this.syncData(), 60000);
-        }
     }
 
-    // Initialize AI Model
-    async initializeAI() {
-        try {
-            // Create a neural network for mood prediction
-            this.aiModel = tf.sequential({
-                layers: [
-                    tf.layers.dense({
-                        inputShape: [14], // Multiple factors
-                        units: 32,
-                        activation: 'relu'
-                    }),
-                    tf.layers.dropout({ rate: 0.2 }),
-                    tf.layers.dense({
-                        units: 16,
-                        activation: 'relu'
-                    }),
-                    tf.layers.dense({
-                        units: 5,
-                        activation: 'softmax' // 5 mood categories
-                    })
-                ]
-            });
-
-            this.aiModel.compile({
-                optimizer: tf.train.adam(0.001),
-                loss: 'categoricalCrossentropy',
-                metrics: ['accuracy']
-            });
-
-            // Load or train model
-            await this.loadOrTrainModel();
-            
-            console.log('AI Model initialized successfully');
-        } catch (error) {
-            console.error('Error initializing AI:', error);
-        }
-    }
-
-    // Load or train AI model
-    async loadOrTrainModel() {
-        try {
-            // Try to load existing model
-            this.aiModel = await tf.loadLayersModel('localstorage://mood-prediction-model');
-        } catch (e) {
-            // Train new model if we have enough data
-            if (this.data.moods.length >= 30) {
-                await this.trainModel();
+    // Load data from localStorage
+    loadData() {
+        const savedData = localStorage.getItem('mindfulme_data');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            // Convert array back to Set for usedMoodValues
+            if (data.usedMoodValues && Array.isArray(data.usedMoodValues)) {
+                data.usedMoodValues = new Set(data.usedMoodValues);
             }
+            return data;
         }
-    }
-
-    // Train AI model
-    async trainModel() {
-        const trainingData = this.prepareTrainingData();
-        if (!trainingData) return;
-
-        await this.aiModel.fit(trainingData.xs, trainingData.ys, {
-            epochs: 50,
-            batchSize: 32,
-            validationSplit: 0.2,
-            callbacks: {
-                onEpochEnd: (epoch, logs) => {
-                    console.log(`Training epoch ${epoch}: loss = ${logs.loss.toFixed(4)}`);
-                }
-            }
-        });
-
-        // Save model
-        await this.aiModel.save('localstorage://mood-prediction-model');
-    }
-
-    // Prepare training data for AI
-    prepareTrainingData() {
-        if (this.data.moods.length < 30) return null;
-
-        const features = [];
-        const labels = [];
-
-        this.data.moods.forEach((mood, index) => {
-            if (index === 0) return; // Skip first entry (no previous data)
-
-            const date = new Date(mood.date);
-            const feature = [
-                date.getHours() / 24, // Normalized hour
-                date.getDay() / 7, // Normalized day of week
-                mood.factors.includes('Sleep') ? 1 : 0,
-                mood.factors.includes('Exercise') ? 1 : 0,
-                mood.factors.includes('Diet') ? 1 : 0,
-                mood.factors.includes('Social') ? 1 : 0,
-                mood.factors.includes('Work') ? 1 : 0,
-                mood.factors.includes('Weather') ? 1 : 0,
-                mood.factors.includes('Health') ? 1 : 0,
-                mood.factors.includes('Stress') ? 1 : 0,
-                this.getPreviousMoodAverage(date, 1),
-                this.getPreviousMoodAverage(date, 3),
-                this.getPreviousMoodAverage(date, 7),
-                this.getSleepQuality(date) // Additional biometric data
-            ];
-
-            features.push(feature);
-            
-            // One-hot encode the mood value
-            const label = Array(5).fill(0);
-            label[mood.value - 1] = 1;
-            labels.push(label);
-        });
-
         return {
-            xs: tf.tensor2d(features),
-            ys: tf.tensor2d(labels)
+            moods: [],
+            journals: [],
+            breathingSessions: [],
+            lastVisit: new Date().toDateString(),
+            streak: 1,
+            usedMoodValues: new Set(),
+            puzzlesCompleted: 0,
+            preferences: {
+                reminderTime: null,
+                theme: 'dark'
+            }
         };
     }
 
-    // Get previous mood average
-    getPreviousMoodAverage(currentDate, days) {
-        const startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - days);
-        
-        const relevantMoods = this.data.moods.filter(mood => {
-            const moodDate = new Date(mood.date);
-            return moodDate >= startDate && moodDate < currentDate;
+    // Load achievements
+    loadAchievements() {
+        const saved = localStorage.getItem('mindfulme_achievements');
+        if (saved) {
+            const savedAchievements = JSON.parse(saved);
+            Object.keys(savedAchievements).forEach(key => {
+                if (this.achievements[key]) {
+                    this.achievements[key].unlocked = savedAchievements[key].unlocked;
+                }
+            });
+        }
+    }
+
+    // Save achievements
+    saveAchievements() {
+        localStorage.setItem('mindfulme_achievements', JSON.stringify(this.achievements));
+    }
+
+    // Check and unlock achievements
+    checkAchievements() {
+        let newUnlock = false;
+
+        // First mood
+        if (this.data.moods.length >= 1 && !this.achievements.firstMood.unlocked) {
+            this.achievements.firstMood.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.firstMood);
+        }
+
+        // Ten moods
+        if (this.data.moods.length >= 10 && !this.achievements.tenMoods.unlocked) {
+            this.achievements.tenMoods.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.tenMoods);
+        }
+
+        // Week streak
+        if (this.data.streak >= 7 && !this.achievements.weekStreak.unlocked) {
+            this.achievements.weekStreak.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.weekStreak);
+        }
+
+        // First journal
+        if (this.data.journals.length >= 1 && !this.achievements.firstJournal.unlocked) {
+            this.achievements.firstJournal.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.firstJournal);
+        }
+
+        // Breathing pro
+        if (this.data.breathingSessions.length >= 5 && !this.achievements.breathingPro.unlocked) {
+            this.achievements.breathingPro.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.breathingPro);
+        }
+
+        // Zen master (30 minutes breathing)
+        const totalBreathingTime = this.data.breathingSessions.reduce((sum, session) => sum + session.duration, 0);
+        if (totalBreathingTime >= 1800 && !this.achievements.zenMaster.unlocked) {
+            this.achievements.zenMaster.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.zenMaster);
+        }
+
+        // Mood explorer
+        if (this.data.usedMoodValues && this.data.usedMoodValues.size >= 5 && !this.achievements.moodExplorer.unlocked) {
+            this.achievements.moodExplorer.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.moodExplorer);
+        }
+
+        // Consistent user (3 days in a row)
+        if (this.data.streak >= 3 && !this.achievements.consistentUser.unlocked) {
+            this.achievements.consistentUser.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.consistentUser);
+        }
+
+        // Puzzle solver
+        if (this.data.puzzlesCompleted >= 1 && !this.achievements.puzzleSolver.unlocked) {
+            this.achievements.puzzleSolver.unlocked = true;
+            newUnlock = true;
+            this.showAchievement(this.achievements.puzzleSolver);
+        }
+
+        if (newUnlock) {
+            this.saveAchievements();
+            this.displayAchievements();
+        }
+    }
+
+    // Show achievement notification
+    showAchievement(achievement) {
+        const notification = document.createElement('div');
+        notification.className = 'achievement-notification';
+        notification.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-text">
+                <div class="achievement-title">Achievement Unlocked!</div>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-desc">${achievement.description}</div>
+            </div>
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+    }
+
+    // Display achievements in home
+    displayAchievements() {
+        const container = document.getElementById('achievementsContainer');
+        if (!container) return;
+
+        const unlockedCount = Object.values(this.achievements).filter(a => a.unlocked).length;
+        const totalCount = Object.values(this.achievements).length;
+
+        container.innerHTML = `
+            <h3>🏆 Achievements (${unlockedCount}/${totalCount})</h3>
+            <div class="achievements-grid">
+                ${Object.values(this.achievements).map(achievement => `
+                    <div class="achievement-badge ${achievement.unlocked ? 'unlocked' : 'locked'}" 
+                         title="${achievement.description}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-name">${achievement.name}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // Save data to localStorage
+    saveData() {
+        // Convert Set to Array for storage
+        const dataToSave = { ...this.data };
+        if (this.data.usedMoodValues instanceof Set) {
+            dataToSave.usedMoodValues = Array.from(this.data.usedMoodValues);
+        }
+        localStorage.setItem('mindfulme_data', JSON.stringify(dataToSave));
+    }
+
+    // Update date/time display
+    updateDateTime() {
+        const now = new Date();
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        const dateTimeStr = now.toLocaleDateString('en-US', options);
+
+        const moodCheckTime = document.getElementById('moodCheckTime');
+        if (moodCheckTime) {
+            moodCheckTime.textContent = dateTimeStr;
+        }
+    }
+
+    // Check and update daily streak
+    checkDailyStreak() {
+        const today = new Date().toDateString();
+        const lastVisit = new Date(this.data.lastVisit);
+        const todayDate = new Date(today);
+        const daysDiff = Math.floor((todayDate - lastVisit) / (1000 * 60 * 60 * 24));
+
+        if (this.data.lastVisit !== today) {
+            if (daysDiff === 1) {
+                this.data.streak++;
+            } else if (daysDiff > 1) {
+                this.data.streak = 1;
+            }
+            this.data.lastVisit = today;
+            this.saveData();
+        }
+    }
+
+    // Update statistics
+    updateStats() {
+        // Streak
+        document.getElementById('streakDays').textContent = this.data.streak;
+
+        // Total entries
+        const totalEntries = this.data.moods.length + this.data.journals.length;
+        document.getElementById('totalEntries').textContent = totalEntries;
+
+        // Average mood
+        if (this.data.moods.length > 0) {
+            const avgMoodValue = this.data.moods.reduce((sum, mood) => sum + mood.value, 0) / this.data.moods.length;
+            const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
+            document.getElementById('avgMood').textContent = moodEmojis[Math.round(avgMoodValue) - 1];
+
+            // Current mood (today's last mood)
+            const todayMoods = this.data.moods.filter(mood => {
+                const moodDate = new Date(mood.date).toDateString();
+                return moodDate === new Date().toDateString();
+            });
+            if (todayMoods.length > 0) {
+                document.getElementById('currentMoodEmoji').textContent = todayMoods[todayMoods.length - 1].emoji;
+            }
+        }
+
+        // Mindful minutes - Fixed calculation
+        const totalMinutes = this.data.breathingSessions.reduce((sum, session) => sum + Math.floor(session.duration / 60), 0);
+        document.getElementById('mindfulMinutes').textContent = totalMinutes;
+
+        // Weekly check-ins
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const weeklyCheckIns = this.data.breathingSessions.filter(session => new Date(session.date) >= weekAgo).length;
+        document.getElementById('weeklyCheckIns').textContent = weeklyCheckIns;
+    }
+    // Mood tracking methods
+    selectMood(value) {
+        this.currentMood = value;
+        // Update UI
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            btn.classList.remove('selected');
         });
+        event.target.closest('.mood-btn').classList.add('selected');
 
-        if (relevantMoods.length === 0) return 0.5; // Neutral default
-        
-        const sum = relevantMoods.reduce((acc, mood) => acc + mood.value, 0);
-        return sum / relevantMoods.length / 5; // Normalize to 0-1
+        // Show factors section
+        document.querySelector('.mood-factors').style.display = 'block';
     }
 
-    // Get sleep quality (simulated for now)
-    getSleepQuality(date) {
-        // In a real app, this would come from wearable data
-        return Math.random(); // 0-1 scale
-    }
-
-    // Predict next mood
-    async predictNextMood() {
-        if (!this.aiModel || this.data.moods.length < 5) {
-            return null;
+    // Toggle mood factor
+    toggleFactor(factor) {
+        const index = this.selectedFactors.indexOf(factor);
+        if (index > -1) {
+            this.selectedFactors.splice(index, 1);
+        } else {
+            this.selectedFactors.push(factor);
         }
 
-        const date = new Date();
-        const features = [
-            date.getHours() / 24,
-            date.getDay() / 7,
-            0, 0, 0, 0, 0, 0, 0, 0, // Factors (unknown for future)
-            this.getPreviousMoodAverage(date, 1),
-            this.getPreviousMoodAverage(date, 3),
-            this.getPreviousMoodAverage(date, 7),
-            this.getSleepQuality(date)
-        ];
-
-        const prediction = await this.aiModel.predict(tf.tensor2d([features])).data();
-        const predictedMood = prediction.indexOf(Math.max(...prediction)) + 1;
-        const confidence = Math.max(...prediction);
-
-        return {
-            mood: predictedMood,
-            confidence: confidence,
-            recommendations: this.generateRecommendations(predictedMood)
-        };
+        // Update UI
+        event.target.classList.toggle('selected');
     }
 
-    // Generate AI recommendations
-    generateRecommendations(predictedMood) {
-        const recommendations = {
-            1: [ // Very Sad
-                { icon: '🚶', text: 'Take a 10-minute walk outside', priority: 'high' },
-                { icon: '📞', text: 'Call a trusted friend or family member', priority: 'high' },
-                { icon: '🧘', text: 'Try the emergency breathing exercise', priority: 'medium' }
-            ],
-            2: [ // Sad
-                { icon: '🎵', text: 'Listen to your favorite uplifting music', priority: 'medium' },
-                { icon: '📝', text: 'Journal about your feelings', priority: 'high' },
-                { icon: '🌞', text: 'Get some sunlight exposure', priority: 'medium' }
-            ],
-            3: [ // Neutral
-                { icon: '🎯', text: 'Set a small goal for today', priority: 'low' },
-                { icon: '🏃', text: 'Add some physical activity', priority: 'medium' },
-                { icon: '🙏', text: 'Practice gratitude meditation', priority: 'low' }
-            ],
-            4: [ // Happy
-                { icon: '📸', text: 'Capture this moment in your journal', priority: 'low' },
-                { icon: '🤝', text: 'Share positivity in the community', priority: 'medium' },
-                { icon: '🎨', text: 'Express yourself creatively', priority: 'low' }
-            ],
-            5: [ // Very Happy
-                { icon: '🎉', text: 'Celebrate your achievement', priority: 'low' },
-                { icon: '💝', text: 'Pay it forward with kindness', priority: 'medium' },
-                { icon: '📈', text: 'Reflect on what brought you here', priority: 'high' }
-            ]
-        };
-
-        return recommendations[predictedMood] || recommendations[3];
-    }
-
-    // Initialize Encryption
-    async initializeEncryption() {
-        try {
-            // Generate or load encryption key
-            const savedKey = localStorage.getItem('mindfulme_encryption_key');
-            
-            if (savedKey) {
-                this.encryptionKey = await crypto.subtle.importKey(
-                    'jwk',
-                    JSON.parse(savedKey),
-                    { name: 'AES-GCM', length: 256 },
-                    true,
-                    ['encrypt', 'decrypt']
-                );
-            } else {
-                // Generate new key
-                this.encryptionKey = await crypto.subtle.generateKey(
-                    { name: 'AES-GCM', length: 256 },
-                    true,
-                    ['encrypt', 'decrypt']
-                );
-                
-                // Export and save key
-                const exportedKey = await crypto.subtle.exportKey('jwk', this.encryptionKey);
-                localStorage.setItem('mindfulme_encryption_key', JSON.stringify(exportedKey));
-            }
-            
-            console.log('Encryption initialized');
-        } catch (error) {
-            console.error('Error initializing encryption:', error);
-        }
-    }
-
-    // Encrypt data
-    async encryptData(data) {
-        if (!this.encryptionKey) return data;
-
-        const encoder = new TextEncoder();
-        const dataBuffer = encoder.encode(JSON.stringify(data));
-        
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encryptedData = await crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv },
-            this.encryptionKey,
-            dataBuffer
-        );
-
-        return {
-            iv: Array.from(iv),
-            data: Array.from(new Uint8Array(encryptedData))
-        };
-    }
-
-    // Decrypt data
-    async decryptData(encryptedData) {
-        if (!this.encryptionKey || !encryptedData.iv) return encryptedData;
-
-        try {
-            const decryptedData = await crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv: new Uint8Array(encryptedData.iv) },
-                this.encryptionKey,
-                new Uint8Array(encryptedData.data)
-            );
-
-            const decoder = new TextDecoder();
-            return JSON.parse(decoder.decode(decryptedData));
-        } catch (error) {
-            console.error('Decryption error:', error);
-            return null;
-        }
-    }
-    // Initialize Biometrics
-    initializeBiometrics() {
-        // Initialize camera for HRV
-        this.initializeHRV();
-        
-        // Initialize face detection
-        this.initializeFaceDetection();
-        
-        // Initialize voice analysis
-        this.initializeVoiceAnalysis();
-    }
-
-    // Initialize HRV monitoring
-    async initializeHRV() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'user' } 
-            });
-            
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.play();
-            
-            // Simulated HRV calculation (in real app, would use rPPG algorithm)
-            setInterval(() => {
-                if (this.isMonitoringHRV) {
-                    const hrv = this.calculateHRV(video);
-                    this.biometricData.hrv.push({
-                        value: hrv,
-                        timestamp: new Date().toISOString()
-                    });
-                    this.updateHRVDisplay(hrv);
-                }
-            }, 1000);
-            
-        } catch (error) {
-            console.log('HRV monitoring not available:', error);
-        }
-    }
-
-    // Calculate HRV (simplified)
-    calculateHRV(video) {
-        // In a real implementation, this would use remote photoplethysmography
-        // For now, return simulated data
-        return 50 + Math.random() * 30; // 50-80 ms
-    }
-
-    // Update HRV display
-    updateHRVDisplay(hrv) {
-        const hrvDisplay = document.getElementById('hrvDisplay');
-        if (hrvDisplay) {
-            hrvDisplay.textContent = `${Math.round(hrv)} ms`;
-            
-            // Update status
-            const status = document.getElementById('hrvStatus');
-            if (status) {
-                if (hrv > 60) {
-                    status.textContent = 'Excellent';
-                    status.className = 'hrv-status coherence-high';
-                } else if (hrv > 40) {
-                    status.textContent = 'Good';
-                    status.className = 'hrv-status coherence-medium';
-                } else {
-                    status.textContent = 'Stressed';
-                    status.className = 'hrv-status coherence-low';
-                }
-            }
-        }
-    }
-
-    // Initialize Face Detection
-    async initializeFaceDetection() {
-        try {
-            await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
-            await faceapi.nets.faceExpressionNet.loadFromUri('/models');
-            
-            console.log('Face detection initialized');
-        } catch (error) {
-            console.log('Face detection not available:', error);
-        }
-    }
-
-    // Detect facial emotion
-    async detectFacialEmotion(imageElement) {
-        if (!faceapi.nets.tinyFaceDetector.isLoaded) return null;
-
-        const detections = await faceapi
-            .detectSingleFace(imageElement, new faceapi.TinyFaceDetectorOptions())
-            .withFaceExpressions();
-
-        if (detections) {
-            const emotions = detections.expressions;
-            const dominantEmotion = Object.keys(emotions).reduce((a, b) => 
-                emotions[a] > emotions[b] ? a : b
-            );
-            
-            this.biometricData.facialEmotion.push({
-                emotion: dominantEmotion,
-                confidence: emotions[dominantEmotion],
-                timestamp: new Date().toISOString()
-            });
-            
-            return dominantEmotion;
-        }
-        
-        return null;
-    }
-
-    // Initialize Voice Analysis
-    initializeVoiceAnalysis() {
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            console.log('Voice analysis not available');
+    // Save mood
+    saveMood() {
+        if (!this.currentMood) {
+            alert('Please select a mood first');
             return;
         }
 
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        this.voiceAnalyzer = this.audioContext.createAnalyser();
-        this.voiceAnalyzer.fftSize = 2048;
-    }
+        const moodNote = document.getElementById('moodNote').value;
+        const moodEmojis = ['😢', '😟', '😐', '🙂', '😊'];
 
-    // Analyze voice sentiment
-    async analyzeVoiceSentiment() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const source = this.audioContext.createMediaStreamSource(stream);
-            source.connect(this.voiceAnalyzer);
-            
-            const bufferLength = this.voiceAnalyzer.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            
-            // Analyze voice characteristics
-            const analyzeVoice = () => {
-                if (!this.isAnalyzingVoice) return;
-                
-                this.voiceAnalyzer.getByteFrequencyData(dataArray);
-                
-                // Calculate voice features
-                const features = this.extractVoiceFeatures(dataArray);
-                const sentiment = this.predictVoiceSentiment(features);
-                
-                this.biometricData.voiceSentiment.push({
-                    sentiment: sentiment,
-                    features: features,
-                    timestamp: new Date().toISOString()
-                });
-                
-                this.updateVoiceDisplay(sentiment);
-                
-                requestAnimationFrame(analyzeVoice);
-            };
-            
-            analyzeVoice();
-            
-        } catch (error) {
-            console.error('Voice analysis error:', error);
-        }
-    }
-
-    // Extract voice features
-    extractVoiceFeatures(dataArray) {
-        // Calculate basic voice features
-        const sum = dataArray.reduce((a, b) => a + b, 0);
-        const average = sum / dataArray.length;
-        
-        // Pitch (fundamental frequency)
-        let maxIndex = 0;
-        let maxValue = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-            if (dataArray[i] > maxValue) {
-                maxValue = dataArray[i];
-                maxIndex = i;
-            }
-        }
-        const pitch = maxIndex * (this.audioContext.sampleRate / this.voiceAnalyzer.fftSize);
-        
-        // Energy
-        const energy = Math.sqrt(sum / dataArray.length);
-        
-        // Spectral centroid
-        let weightedSum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-            weightedSum += i * dataArray[i];
-        }
-        const spectralCentroid = weightedSum / sum;
-        
-        return {
-            pitch: pitch,
-            energy: energy,
-            spectralCentroid: spectralCentroid,
-            average: average
+        const moodEntry = {
+            value: this.currentMood,
+            emoji: moodEmojis[this.currentMood - 1],
+            factors: [...this.selectedFactors],
+            note: moodNote,
+            date: new Date().toISOString()
         };
-    }
 
-    // Predict voice sentiment
-    predictVoiceSentiment(features) {
-        // Simplified sentiment prediction based on voice features
-        // In a real app, this would use a trained model
-        
-        const energyThreshold = 50;
-        const pitchThreshold = 200;
-        
-        if (features.energy < energyThreshold && features.pitch < pitchThreshold) {
-            return 'sad';
-        } else if (features.energy > energyThreshold * 1.5 && features.pitch > pitchThreshold * 1.2) {
-            return 'happy';
-        } else if (features.spectralCentroid > 500) {
-            return 'stressed';
-        } else {
-            return 'neutral';
+        this.data.moods.push(moodEntry);
+
+        // Track used mood values
+        if (!this.data.usedMoodValues) {
+            this.data.usedMoodValues = new Set();
         }
-    }
+        this.data.usedMoodValues.add(this.currentMood);
 
-    // Initialize PWA
-    initializePWA() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(registration => {
-                    console.log('Service Worker registered');
-                    
-                    // Check for updates
-                    registration.addEventListener('updatefound', () => {
-                        const newWorker = registration.installing;
-                        newWorker.addEventListener('statechange', () => {
-                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                this.showUpdatePrompt();
-                            }
-                        });
-                    });
-                })
-                .catch(error => {
-                    console.error('Service Worker registration failed:', error);
-                });
+        // Check time-based achievements
+        const hour = new Date().getHours();
+        if (hour < 9 && !this.achievements.earlyBird.unlocked) {
+            this.achievements.earlyBird.unlocked = true;
+            this.showAchievement(this.achievements.earlyBird);
+        }
+        if (hour >= 21 && !this.achievements.nightOwl.unlocked) {
+            this.achievements.nightOwl.unlocked = true;
+            this.showAchievement(this.achievements.nightOwl);
         }
 
-        // Handle install prompt
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            this.showInstallPrompt(deferredPrompt);
-        });
+        this.saveData();
+        this.updateStats();
+        this.checkAchievements();
+
+        // Reset form
+        this.currentMood = null;
+        this.selectedFactors = [];
+        document.getElementById('moodNote').value = '';
+        document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelectorAll('.factor-chip').forEach(chip => chip.classList.remove('selected'));
+        document.querySelector('.mood-factors').style.display = 'none';
+
+        // Show success messag
+        const saveBtn = document.querySelector('.save-mood-btn');
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = '✓ Mood Saved!';
+        saveBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+
+        setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.style.background = '';
+            // Go back to home page after saving
+            showPage('home');
+        }, 1500);
     }
 
-    // Show install prompt
-    showInstallPrompt(deferredPrompt) {
-        const installPrompt = document.createElement('div');
-        installPrompt.className = 'pwa-install-prompt show';
-        installPrompt.innerHTML = `
-            <i class="fas fa-download"></i>
-            <span>Install MindfulMe for offline access</span>
-            <button class="btn btn-primary" onclick="app.installPWA()">Install</button>
-            <button class="btn btn-secondary" onclick="this.parentElement.remove()">Later</button>
-        `;
-        document.body.appendChild(installPrompt);
-        
-        this.deferredPrompt = deferredPrompt;
-    }
+    // Breathing exercise methods
+    startBreathing(technique) {
+        const techniques = {
+            '478': { inhale: 4, hold: 7, exhale: 8, name: '4-7-8 Breathing' },
+            'box': { inhale: 4, hold: 4, exhale: 4, name: 'Box Breathing' },
+            'calm': { inhale: 3, hold: 0, exhale: 6, name: 'Calm Breathing' }
+        };
 
-    // Install PWA
-    async installPWA() {
-        if (!this.deferredPrompt) return;
-        
-        this.deferredPrompt.prompt();
-        const { outcome } = await this.deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            console.log('PWA installed');
-        }
-        
-        this.deferredPrompt = null;
-        document.querySelector('.pwa-install-prompt')?.remove();
-    }
+        const selected = techniques[technique];
+        this.currentTechnique = selected;
+        this.sessionStartTime = Date.now();
+        this.cycleCount = 0;
+        this.isPaused = false;
+        this.totalPausedDuration = 0;
 
-    // Community Features
-    loadCommunityPosts() {
-        // In a real app, this would fetch from a server
-        this.communityPosts = [
-            {
-                id: 1,
-                username: 'AnonymousOwl',
-                avatar: 'AO',
-                content: 'Today was tough, but I managed to complete my breathing exercises. Small wins!',
-                likes: 23,
-                comments: 5,
-                timestamp: new Date(Date.now() - 3600000).toISOString(),
-                tags: ['anxiety', 'breathing', 'progress']
-            },
-            {
-                id: 2,
-                username: 'HopefulPanda',
-                avatar: 'HP',
-                content: 'My mood graph shows improvement over the past week! The AI recommendations really helped.',
-                likes: 45,
-                comments: 12,
-                timestamp: new Date(Date.now() - 7200000).toISOString(),
-                tags: ['success', 'ai-insights', 'mood-tracking']
-            }
-        ];
-        
-        this.displayCommunityPosts();
-    }
+        // Hide technique selection and show breathing exercise
+        document.getElementById('breathingTechniques').style.display = 'none';
+        document.getElementById('breathingContainer').style.display = 'block';
 
-    // Display community posts
-    displayCommunityPosts() {
-        const container = document.getElementById('communityFeed');
-        if (!container) return;
-
-        container.innerHTML = this.communityPosts.map(post => `
-            <div class="community-post">
-                <div class="post-header">
-                    <div class="post-avatar">${post.avatar}</div>
-                    <div class="post-meta">
-                        <div class="post-username">${post.username}</div>
-                        <div class="post-time">${this.formatRelativeTime(post.timestamp)}</div>
+        // Update breathing container
+        document.getElementById('breathingContainer').innerHTML = `
+            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="app.backToTechniques()">
+                <i class="fas fa-arrow-left"></i> Back to Techniques
+            </button>
+            <h3>${selected.name}</h3>
+            <div class="breathing-stats">
+                <div class="breathing-stat">
+                    <span class="stat-label">Cycles</span>
+                    <span class="stat-value" id="cycleCount">0</span>
+                </div>
+                <div class="breathing-stat">
+                    <span class="stat-label">Session Time</span>
+                    <span class="stat-value" id="sessionTime">0:00</span>
+                </div>
+            </div>
+            <div class="breathing-visual">
+                <div class="breathing-circle" id="breathingCircle">
+                    <svg class="progress-ring" width="200" height="200">
+                        <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+                        <circle class="progress-ring-circle" cx="100" cy="100" r="90" />
+                    </svg>
+                    <div class="breathing-inner">
+                        <div class="breathing-text" id="breathingText">Get Ready</div>
+                        <div class="breathing-counter" id="breathingCounter"></div>
                     </div>
                 </div>
-                <div class="post-content">${post.content}</div>
-                <div class="post-tags">
-                    ${post.tags.map(tag => `<span class="post-tag">#${tag}</span>`).join('')}
-                </div>
-                <div class="post-actions">
-                    <span class="post-action" onclick="app.likePost(${post.id})">
-                        <i class="fas fa-heart"></i> ${post.likes}
-                    </span>
-                    <span class="post-action" onclick="app.commentPost(${post.id})">
-                        <i class="fas fa-comment"></i> ${post.comments}
-                    </span>
-                    <span class="post-action" onclick="app.supportPost(${post.id})">
-                        <i class="fas fa-hands-helping"></i> Support
-                    </span>
-                </div>
             </div>
+            <div class="breathing-progress">
+                <div class="breathing-progress-bar" id="breathingProgress"></div>
+            </div>
+            <div class="breathing-controls">
+                <button class="btn btn-secondary" onclick="app.pauseBreathing()" id="pauseBtn">Pause</button>
+                <button class="btn btn-secondary" onclick="app.stopBreathing()">Stop</button>
+            </div>
+        `;
+
+        // Start session timer
+        this.sessionTimer = setInterval(() => this.updateSessionTimer(), 1000);
+
+        // Start breathing cycle
+        this.breathingCycle();
+    }
+
+    // Update session timer
+    updateSessionTimer() {
+        if (!this.isPaused && this.sessionStartTime) {
+            const elapsed = Math.floor((Date.now() - this.sessionStartTime - this.totalPausedDuration) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('sessionTime').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }
+
+    // Breathing cycle
+    breathingCycle() {
+        if (this.isPaused) return;
+
+        const circle = document.getElementById('breathingCircle');
+        const text = document.getElementById('breathingText');
+        const counter = document.getElementById('breathingCounter');
+        const progress = document.getElementById('breathingProgress');
+        const progressCircle = document.querySelector('.progress-ring-circle');
+
+        const phases = [
+            { 
+                text: 'Breathe In', 
+                duration: this.currentTechnique.inhale * 1000, 
+                class: 'breathing-in',
+                color: '#6366f1'
+            },
+            { 
+                text: 'Hold', 
+                duration: this.currentTechnique.hold * 1000, 
+                class: 'breathing-hold',
+                color: '#eab308'
+            },
+            { 
+                text: 'Breathe Out', 
+                duration: this.currentTechnique.exhale * 1000, 
+                class: 'breathing-out',
+                color: '#10b981'
+            }
+        ];
+
+        if (this.currentTechnique.hold === 0) {
+            phases.splice(1, 1); // Remove hold phase for calm breathing
+        }
+
+        let phaseIndex = 0;
+
+        const runPhase = () => {
+            if (this.isPaused) return;
+
+            const phase = phases[phaseIndex];
+            circle.className = 'breathing-circle ' + phase.class;
+            text.textContent = phase.text;
+            progress.style.background = phase.color;
+
+            // Animate progress circle
+            const circumference = 2 * Math.PI * 90;
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.stroke = phase.color;
+
+            let timeLeft = phase.duration / 1000;
+            counter.textContent = timeLeft.toFixed(1);
+
+            // Smooth countdown
+            progressCircle.style.strokeDashoffset = 0;
+            progressCircle.style.transition = 'none';
+            setTimeout(() => {
+                progressCircle.style.transition = `stroke-dashoffset ${phase.duration}ms linear`;
+                progressCircle.style.strokeDashoffset = circumference;
+            }, 50);
+
+            this.breathingTimer = setInterval(() => {
+                if (this.isPaused) return;
+
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    clearInterval(this.breathingTimer);
+
+                    phaseIndex++;
+                    if (phaseIndex >= phases.length) {
+                        phaseIndex = 0;
+                        this.cycleCount++;
+                        document.getElementById('cycleCount').textContent = this.cycleCount;
+
+                        // Check for milestone
+                        if (this.cycleCount % 5 === 0) {
+                            this.showMilestone(this.cycleCount);
+                        }
+                    }
+
+                    // Add small pause between phases
+                    setTimeout(() => {
+                        if (!this.isPaused) {
+                            runPhase();
+                        }
+                    }, 200);
+                } else {
+                    counter.textContent = timeLeft.toFixed(1);
+                }
+            }, 100);
+        };
+
+        runPhase();
+    }
+
+    // Show milestone popup
+    showMilestone(cycles) {
+        const popup = document.createElement('div');
+        popup.className = 'milestone-popup';
+        popup.innerHTML = `
+            <div class="milestone-content">
+                <div class="milestone-icon">🎉</div>
+                <div class="milestone-text">Amazing! ${cycles} cycles completed!</div>
+            </div>
+        `;
+        document.body.appendChild(popup);
+
+        setTimeout(() => popup.classList.add('show'), 100);
+        setTimeout(() => {
+            popup.classList.remove('show');
+            setTimeout(() => popup.remove(), 500);
+        }, 2000);
+    }
+
+    // Pause breathing
+    pauseBreathing() {
+        this.isPaused = !this.isPaused;
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+
+        if (this.isPaused) {
+            this.pausedTime = Date.now();
+            clearInterval(this.breathingTimer);
+        } else {
+            this.totalPausedDuration += Date.now() - this.pausedTime;
+            this.breathingCycle();
+        }
+    }
+
+    // Stop breathing exercise
+    stopBreathing() {
+        clearInterval(this.breathingTimer);
+        clearInterval(this.sessionTimer);
+
+        if (this.sessionStartTime) {
+            const duration = Math.floor((Date.now() - this.sessionStartTime - this.totalPausedDuration) / 1000);
+            this.data.breathingSessions.push({
+                technique: this.currentTechnique.name,
+                duration: duration,
+                cycles: this.cycleCount,
+                date: new Date().toISOString()
+            });
+            this.saveData();
+            this.updateStats();
+            this.checkAchievements();
+        }
+
+        document.querySelector('.breathing-container').innerHTML = `
+            <p>Great job! You completed ${this.cycleCount} cycles.</p>
+            <button class="btn btn-primary" onclick="showPage('home')">Back to Home</button>
+        `;
+    }
+
+    // Back to techniques
+    backToTechniques() {
+        this.stopBreathing();
+        document.getElementById('breathingTechniques').style.display = 'grid';
+        document.getElementById('breathingContainer').style.display = 'none';
+        document.getElementById('breathingContainer').innerHTML = '';
+    }
+
+    // Journal methods
+    loadJournalPrompt() {
+        const prompts = [
+            "What are three things you're grateful for today?",
+            "Describe a moment today that made you smile.",
+            "What's one thing you learned about yourself recently?",
+            "If today had a color, what would it be and why?",
+            "What's something you're looking forward to?",
+            "Describe how you're feeling right now in detail.",
+            "What would you tell your younger self today?",
+            "What small victory did you achieve today?",
+            "What's been on your mind lately?",
+            "How have you grown in the past month?"
+        ];
+
+        const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+        document.getElementById('journalPrompt').textContent = randomPrompt;
+    }
+
+    // Add journal tag
+    addTag(tag) {
+        if (!this.currentTags.includes(tag)) {
+            this.currentTags.push(tag);
+            this.updateTagDisplay();
+        }
+    }
+
+    // Update tag display
+    updateTagDisplay() {
+        const container = document.getElementById('selectedTags');
+        container.innerHTML = this.currentTags.map(tag => `
+            <span class="selected-tag">
+                ${tag}
+                <span onclick="app.removeTag('${tag}')">&times;</span>
+            </span>
         `).join('');
     }
 
-    // Format relative time
-    formatRelativeTime(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diff = Math.floor((now - date) / 1000); // seconds
-
-        if (diff < 60) return 'just now';
-        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-        return `${Math.floor(diff / 86400)}d ago`;
+    // Remove tag
+    removeTag(tag) {
+        this.currentTags = this.currentTags.filter(t => t !== tag);
+        this.updateTagDisplay();
     }
 
-    // Advanced Meditation Features
-    async startMeditation(type) {
-        const meditationTypes = {
-            'guided': {
-                name: 'Guided Meditation',
-                duration: 600, // 10 minutes
-                audioUrl: '/audio/guided-meditation.mp3',
-                binaural: null
-            },
-            'binaural': {
-                name: 'Binaural Beats',
-                duration: 900, // 15 minutes
-                audioUrl: null,
-                binaural: { left: 200, right: 207.5 } // 7.5Hz theta waves
-            },
-            'breath': {
-                name: 'Breath Focus',
-                duration: 300, // 5 minutes
-                audioUrl: '/audio/breath-focus.mp3',
-                binaural: null
-            }
+    // Update journal word count
+    updateWordCount() {
+        const content = document.getElementById('journalContent').value;
+        const wordCount = content.trim().split(/\s+/).length;
+        document.getElementById('wordCount').textContent = content.trim() === '' ? 0 : wordCount;
+    }
+
+    // Save journal entry
+    saveJournal() {
+        const content = document.getElementById('journalContent').value.trim();
+        if (!content) {
+            alert('Please write something before saving');
+            return;
+        }
+
+        const entry = {
+            content: content,
+            tags: [...this.currentTags],
+            wordCount: content.split(/\s+/).length,
+            date: new Date().toISOString()
         };
 
-        const meditation = meditationTypes[type];
-        this.currentMeditation = meditation;
-        this.meditationStartTime = Date.now();
-
-        // Initialize audio
-        if (meditation.audioUrl) {
-            this.meditationAudio = new Audio(meditation.audioUrl);
-            this.meditationAudio.play();
-        }
-
-        if (meditation.binaural) {
-            this.startBinauralBeats(meditation.binaural);
-        }
-
-        // Start HRV monitoring during meditation
-        this.isMonitoringHRV = true;
-
-        // Update UI
-        this.showMeditationPlayer(meditation);
-    }
-
-    // Start binaural beats
-    startBinauralBeats(frequencies) {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Create oscillators for left and right channels
-        const oscillatorLeft = audioContext.createOscillator();
-        const oscillatorRight = audioContext.createOscillator();
-        
-        // Create gain nodes
-        const gainLeft = audioContext.createGain();
-        const gainRight = audioContext.createGain();
-        
-        // Create stereo panner nodes
-        const pannerLeft = audioContext.createStereoPanner();
-        const pannerRight = audioContext.createStereoPanner();
-        
-        // Set frequencies
-        oscillatorLeft.frequency.value = frequencies.left;
-        oscillatorRight.frequency.value = frequencies.right;
-        
-        // Set panning
-        pannerLeft.pan.value = -1; // Full left
-        pannerRight.pan.value = 1; // Full right
-        
-        // Set volume
-        gainLeft.gain.value = 0.3;
-        gainRight.gain.value = 0.3;
-        
-        // Connect nodes
-        oscillatorLeft.connect(gainLeft);
-        oscillatorRight.connect(gainRight);
-        gainLeft.connect(pannerLeft);
-        gainRight.connect(pannerRight);
-        pannerLeft.connect(audioContext.destination);
-        pannerRight.connect(audioContext.destination);
-        
-        // Start oscillators
-        oscillatorLeft.start();
-        oscillatorRight.start();
-        
-        this.binauralOscillators = { left: oscillatorLeft, right: oscillatorRight };
-    }
-
-    // CBT Thought Challenging
-    analyzeThought(thought) {
-        // Cognitive distortions detection
-        const distortions = {
-            'all-or-nothing': /\b(always|never|every|none|nothing|everything)\b/i,
-            'overgeneralization': /\b(all|every|never|always|no one|everyone)\b/i,
-            'mental-filter': /\b(only|just|merely|simply)\b/i,
-            'catastrophizing': /\b(worst|terrible|awful|disaster|catastrophe|horrible)\b/i,
-            'personalization': /\b(my fault|blame myself|because of me)\b/i,
-            'should-statements': /\b(should|must|ought|have to|need to)\b/i,
-            'emotional-reasoning': /\b(feel|feeling|felt)\b.*\b(so|therefore|must be)\b/i,
-            'labeling': /\b(am a|i'm a|loser|failure|stupid|worthless)\b/i
-        };
-
-        const detectedDistortions = [];
-        
-        for (const [distortion, pattern] of Object.entries(distortions)) {
-            if (pattern.test(thought)) {
-                detectedDistortions.push(distortion);
-            }
-        }
-
-        // Generate reframe suggestions
-        const reframes = this.generateReframes(thought, detectedDistortions);
-
-        return {
-            original: thought,
-            distortions: detectedDistortions,
-            reframes: reframes,
-            timestamp: new Date().toISOString()
-        };
-    }
-
-    // Generate reframe suggestions
-    generateReframes(thought, distortions) {
-        const reframes = [];
-
-        if (distortions.includes('all-or-nothing')) {
-            reframes.push({
-                type: 'Balanced Thinking',
-                suggestion: thought.replace(/always|never/gi, 'sometimes')
-                    .replace(/everything|nothing/gi, 'some things')
-            });
-        }
-
-        if (distortions.includes('catastrophizing')) {
-            reframes.push({
-                type: 'Reality Check',
-                suggestion: 'What is the most likely outcome? What evidence supports this?'
-            });
-        }
-
-        if (distortions.includes('should-statements')) {
-            reframes.push({
-                type: 'Preference vs Demand',
-                suggestion: thought.replace(/should|must/gi, 'would prefer to')
-                    .replace(/have to|need to/gi, 'would like to')
-            });
-        }
-
-        // Add general reframe
-        reframes.push({
-            type: 'Alternative Perspective',
-            suggestion: 'What would you tell a friend in this situation?'
-        });
-
-        return reframes;
-    }
-
-    // Crisis Detection
-    detectCrisis(content) {
-        const crisisKeywords = [
-            'suicide', 'kill myself', 'end it all', 'not worth living',
-            'self harm', 'hurt myself', 'cutting', 'overdose',
-            'hopeless', 'no way out', 'can\'t go on', 'give up'
-        ];
-
-        const lowerContent = content.toLowerCase();
-        const detected = crisisKeywords.some(keyword => lowerContent.includes(keyword));
-
-        if (detected) {
-            this.triggerCrisisIntervention();
-            return true;
-        }
-
-        // Check mood patterns
-        const recentMoods = this.data.moods.slice(-7);
-        const avgMood = recentMoods.reduce((sum, m) => sum + m.value, 0) / recentMoods.length;
-        
-        if (avgMood < 2 && recentMoods.length >= 7) {
-            this.showCrisisResources();
-            return true;
-        }
-
-        return false;
-    }
-
-    // Trigger crisis intervention
-    triggerCrisisIntervention() {
-        // Show immediate help
-        const alert = document.createElement('div');
-        alert.className = 'crisis-alert show';
-        alert.innerHTML = `
-            <h3>We're here for you</h3>
-            <p>It sounds like you're going through a really tough time.</p>
-            <div class="crisis-actions">
-                <button class="btn btn-primary" onclick="app.callCrisisLine()">
-                    <i class="fas fa-phone"></i> Call 988 Now
-                </button>
-                <button class="btn btn-secondary" onclick="app.textCrisisLine()">
-                    <i class="fas fa-comment"></i> Text Crisis Line
-                </button>
-            </div>
-            <div class="safety-contacts">
-                <h4>Your Safety Contacts:</h4>
-                ${this.getSafetyContacts()}
-            </div>
-        `;
-        document.body.appendChild(alert);
-
-        // Log for safety tracking
-        this.data.crisisEvents = this.data.crisisEvents || [];
-        this.data.crisisEvents.push({
-            timestamp: new Date().toISOString(),
-            resolved: false
-        });
+        this.data.journals.push(entry);
         this.saveData();
+        this.updateStats();
+        this.checkAchievements();
+
+        // Reset form
+        document.getElementById('journalContent').value = '';
+        this.currentTags = [];
+        this.updateTagDisplay();
+        this.updateWordCount();
+        this.loadJournalPrompt();
+        this.loadRecentEntries();
+
+        // Show success
+        const saveBtn = document.querySelector('.save-journal-btn');
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = '✓ Entry Saved!';
+        saveBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+
+        setTimeout(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.style.background = '';
+            // Go back to home page after saving
+            showPage('home');
+        }, 1500);
     }
 
-    // Get safety contacts
-    getSafetyContacts() {
-        const contacts = this.data.safetyContacts || [
-            { name: 'Emergency', number: '911' },
-            { name: 'Crisis Line', number: '988' }
-        ];
+    // Load recent journal entries
+    loadRecentEntries() {
+        const container = document.getElementById('recentEntries');
+        const recent = this.data.journals.slice(-3).reverse();
 
-        return contacts.map(contact => `
-            <div class="safety-contact">
-                <span>${contact.name}</span>
-                <a href="tel:${contact.number}">${contact.number}</a>
-            </div>
-        `).join('');
-    }
-
-    // Data Sync with Encryption
-    async syncData() {
-        if (!this.syncEnabled || !navigator.onLine) return;
-
-        try {
-            // Encrypt data before sync
-            const encryptedData = await this.encryptData(this.data);
-            
-            // In a real app, this would sync to a server
-            // For now, we'll store in a different localStorage key
-            localStorage.setItem('mindfulme_cloud_backup', JSON.stringify({
-                encrypted: encryptedData,
-                lastSync: new Date().toISOString(),
-                deviceId: this.getDeviceId()
-            }));
-
-            this.updateSyncStatus('synced');
-        } catch (error) {
-            console.error('Sync error:', error);
-            this.updateSyncStatus('error');
+        if (recent.length === 0) {
+            container.innerHTML = '<p class="no-entries">No journal entries yet. Start writing!</p>';
+            return;
         }
+
+        container.innerHTML = recent.map(entry => {
+            const date = new Date(entry.date);
+            const preview = entry.content.substring(0, 100) + (entry.content.length > 100 ? '...' : '');
+
+            return `
+                <div class="recent-entry">
+                    <div class="entry-date">${date.toLocaleDateString()}</div>
+                    <div class="entry-preview">${preview}</div>
+                    <div class="entry-tags">
+                        ${entry.tags.map(tag => `<span class="entry-tag">${tag}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
-    // Update sync status
-    updateSyncStatus(status) {
-        const syncStatus = document.getElementById('syncStatus');
-        if (!syncStatus) return;
+    // Insights methods
+    updateInsights() {
+        const container = document.getElementById('insightsContent');
 
-        const statusMessages = {
-            'syncing': '<i class="fas fa-sync sync-icon"></i> Syncing...',
-            'synced': '<i class="fas fa-check"></i> Synced',
-            'error': '<i class="fas fa-exclamation-triangle"></i> Sync Error',
-            'offline': '<i class="fas fa-wifi-slash"></i> Offline'
-        };
-
-        syncStatus.innerHTML = statusMessages[status] || statusMessages['offline'];
-    }
-
-    // Generate correlation matrix
-    generateCorrelationMatrix() {
-        const factors = ['Sleep', 'Exercise', 'Diet', 'Social', 'Work', 'Weather', 'Health', 'Stress'];
-        const matrix = [];
-
-        factors.forEach(factor1 => {
-            const row = [];
-            factors.forEach(factor2 => {
-                const correlation = this.calculateCorrelation(factor1, factor2);
-                row.push(correlation);
-            });
-            matrix.push(row);
-        });
-
-        return { factors, matrix };
-    }
-
-    // Calculate correlation between factors
-    calculateCorrelation(factor1, factor2) {
-        const moodsWithFactor1 = this.data.moods.filter(m => m.factors.includes(factor1));
-        const moodsWithFactor2 = this.data.moods.filter(m => m.factors.includes(factor2));
-        const moodsWithBoth = this.data.moods.filter(m => 
-            m.factors.includes(factor1) && m.factors.includes(factor2)
-        );
-
-        if (moodsWithFactor1.length === 0 || moodsWithFactor2.length === 0) return 0;
-
-        // Calculate average mood for each
-        const avg1 = moodsWithFactor1.reduce((sum, m) => sum + m.value, 0) / moodsWithFactor1.length;
-        const avg2 = moodsWithFactor2.reduce((sum, m) => sum + m.value, 0) / moodsWithFactor2.length;
-        const avgBoth = moodsWithBoth.length > 0 
-            ? moodsWithBoth.reduce((sum, m) => sum + m.value, 0) / moodsWithBoth.length 
-            : 0;
-
-        // Simple correlation approximation
-        const correlation = moodsWithBoth.length > 0 
-            ? (avgBoth - Math.min(avg1, avg2)) / (Math.max(avg1, avg2) - Math.min(avg1, avg2))
-            : 0;
-
-        return Math.max(-1, Math.min(1, correlation));
-    }
-
-    // Therapist sharing
-    generateTherapistCode() {
-        // Generate a unique 6-digit code
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // Store encrypted data with code
-        const shareData = {
-            code: code,
-            data: this.data,
-            created: new Date().toISOString(),
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
-        };
-
-        // In a real app, this would be sent to a server
-        localStorage.setItem(`therapist_share_${code}`, JSON.stringify(shareData));
-        
-        return code;
-    }
-
-    // Export data in various formats
-    async exportData(format = 'json') {
-        const exporters = {
-            'json': () => this.exportJSON(),
-            'csv': () => this.exportCSV(),
-            'pdf': () => this.exportPDF(),
-            'encrypted': () => this.exportEncrypted()
-        };
-
-        if (exporters[format]) {
-            await exporters[format]();
+        if (this.data.moods.length === 0) {
+            container.innerHTML = `
+                <div class="no-data-message">
+                    <div class="no-data-icon">📊</div>
+                    <h3>No mood data yet</h3>
+                    <p>Start tracking your moods to see insights and patterns!</p>
+                    <button class="btn btn-primary" onclick="showPage('mood')">
+                        <i class="fas fa-plus"></i> Track Your First Mood
+                    </button>
+                </div>
+            `;
+            return;
         }
-    }
 
-    // Export as CSV
-    exportCSV() {
-        let csv = 'Date,Mood,Factors,Note\n';
-        
-        this.data.moods.forEach(mood => {
-            const date = new Date(mood.date).toLocaleDateString();
-            const factors = mood.factors.join(';');
-            const note = mood.note ? `"${mood.note.replace(/"/g, '""')}"` : '';
-            csv += `${date},${mood.value},${factors},${note}\n`;
-        });
+        // Get last 7 days of data
+        const last7Days = this.getLast7DaysMoods();
 
-        this.downloadFile(csv, 'mindfulme_moods.csv', 'text/csv');
-    }
+        // Calculate average mood
+        const avgMood = last7Days.reduce((sum, day) => sum + day.average, 0) / last7Days.length;
+        const moodTrend = this.calculateMoodTrend(last7Days);
 
-    // Export as PDF (simplified version)
-    exportPDF() {
-        // In a real app, this would use a PDF library like jsPDF
-        const report = this.generateReport();
-        
-        // For now, create an HTML report
-        const html = `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>MindfulMe Report</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 20px; }
-                    h1 { color: #6366f1; }
-                    .stat { margin: 10px 0; }
-                    .chart { margin: 20px 0; }
-                </style>
-            </head>
-            <body>
-                <h1>MindfulMe Mental Health Report</h1>
-                <p>Generated: ${new Date().toLocaleDateString()}</p>
-                
-                <h2>Summary Statistics</h2>
-                <div class="stat">Average Mood: ${report.avgMood.toFixed(2)}/5</div>
-                <div class="stat">Total Entries: ${report.totalEntries}</div>
-                <div class="stat">Current Streak: ${report.streak} days</div>
-                
-                <h2>Top Mood Factors</h2>
-                <ul>
-                    ${report.topFactors.map(f => `<li>${f.factor}: ${f.count} times</li>`).join('')}
-                </ul>
-                
-                <h2>Recommendations</h2>
-                <ul>
-                    ${report.recommendations.map(r => `<li>${r}</li>`).join('')}
-                </ul>
-            </body>
-            </html>
-        `;
-
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        window.open(url);
-    }
-
-    // Generate report
-    generateReport() {
-        const avgMood = this.data.moods.reduce((sum, m) => sum + m.value, 0) / this.data.moods.length;
-        
+        // Get most common factors
         const factorCounts = {};
         this.data.moods.forEach(mood => {
             mood.factors.forEach(factor => {
@@ -1119,83 +773,816 @@ class MindfulMeAdvanced {
 
         const topFactors = Object.entries(factorCounts)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([factor, count]) => ({ factor, count }));
+            .slice(0, 3);
 
-        const recommendations = [];
-        if (avgMood < 3) {
-            recommendations.push('Consider reaching out to a mental health professional');
-            recommendations.push('Try incorporating more exercise into your routine');
-        }
-        if (topFactors[0]?.factor === 'Stress') {
-            recommendations.push('Explore stress management techniques like meditation');
-        }
+        // Count journal themes
+        const tagCounts = {};
+        this.data.journals.forEach(entry => {
+            entry.tags.forEach(tag => {
+                tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+            });
+        });
 
-        return {
-            avgMood,
-            totalEntries: this.data.moods.length,
-            streak: this.data.streak,
-            topFactors,
-            recommendations
-        };
+        container.innerHTML = `
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-icon">📊</div>
+                    <h4>Average Mood</h4>
+                    <div class="insight-value">${avgMood.toFixed(1)}/5</div>
+                    <div class="insight-trend ${moodTrend > 0 ? 'positive' : moodTrend < 0 ? 'negative' : ''}">
+                        ${moodTrend > 0 ? '↑' : moodTrend < 0 ? '↓' : '→'} ${Math.abs(moodTrend)}%
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">🎯</div>
+                    <h4>Top Mood Factors</h4>
+                    <div class="factor-list">
+                        ${topFactors.map(([factor, count]) => `
+                            <div class="factor-item">
+                                <span>${this.getFactorIcon(factor)} ${factor}</span>
+                                <span class="factor-count">${count}x</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">📈</div>
+                    <h4>Weekly Summary</h4>
+                    <div class="summary-stats">
+                        <div>Check-ins: ${last7Days.reduce((sum, day) => sum + day.count, 0)}</div>
+                        <div>Best Day: ${this.getBestDay(last7Days)}</div>
+                        <div>Consistency: ${this.getConsistencyScore()}%</div>
+                    </div>
+                </div>
+                
+                <div class="insight-card">
+                    <div class="insight-icon">📝</div>
+                    <h4>Journal Themes</h4>
+                    <div class="theme-cloud">
+                        ${Object.entries(tagCounts).slice(0, 5).map(([tag, count]) => `
+                            <span class="theme-tag" style="font-size: ${1 + (count * 0.2)}rem">${tag}</span>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mood-chart-container">
+                <h4>7-Day Mood Trend</h4>
+                <canvas id="moodChart"></canvas>
+            </div>
+        `;
+
+        // Initialize chart
+        this.updateMoodChart();
     }
 
-    // Download file helper
-    downloadFile(content, filename, type) {
-        const blob = new Blob([content], { type });
-        const url = URL.createObjectURL(blob);
+    // Get last 7 days moods
+    getLast7DaysMoods() {
+        const days = [];
+        const today = new Date();
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toDateString();
+            
+            const dayMoods = this.data.moods.filter(mood => 
+                new Date(mood.date).toDateString() === dateStr
+            );
+            
+            days.push({
+                date: date,
+                moods: dayMoods,
+                average: dayMoods.length > 0 
+                    ? dayMoods.reduce((sum, m) => sum + m.value, 0) / dayMoods.length 
+                    : 0,
+                count: dayMoods.length
+            });
+        }
+        
+        return days;
+    }
+
+    // Calculate mood trend
+    calculateMoodTrend(days) {
+        const firstHalf = days.slice(0, 3);
+        const secondHalf = days.slice(4, 7);
+        
+        const firstAvg = firstHalf.reduce((sum, d) => sum + d.average, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, d) => sum + d.average, 0) / secondHalf.length;
+        
+        return Math.round(((secondAvg - firstAvg) / firstAvg) * 100);
+    }
+
+    // Get best day
+    getBestDay(days) {
+        const bestDay = days.reduce((best, day) => 
+            day.average > best.average ? day : best
+        );
+        return bestDay.date.toLocaleDateString('en-US', { weekday: 'short' });
+    }
+
+    // Get consistency score
+    getConsistencyScore() {
+        const last7Days = new Date();
+        last7Days.setDate(last7Days.getDate() - 7);
+        
+        const daysWithEntries = new Set();
+        this.data.moods.forEach(mood => {
+            const moodDate = new Date(mood.date);
+            if (moodDate >= last7Days) {
+                daysWithEntries.add(moodDate.toDateString());
+            }
+        });
+        
+        return Math.round((daysWithEntries.size / 7) * 100);
+    }
+
+    // Get factor icon
+    getFactorIcon(factor) {
+        const icons = {
+            'Sleep': '😴',
+            'Exercise': '🏃',
+            'Diet': '🥗',
+            'Social': '👥',
+            'Work': '💼',
+            'Weather': '☀️',
+            'Health': '❤️',
+            'Stress': '😰'
+        };
+        return icons[factor] || '📌';
+    }
+
+    // Update mood chart
+    updateMoodChart() {
+        const canvas = document.getElementById('moodChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const last7Days = this.getLast7DaysMoods();
+        
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded');
+            canvas.parentElement.innerHTML = '<p>Chart loading error. Please refresh.</p>';
+            return;
+        }
+        
+        // Destroy existing chart if any
+        if (window.moodChartInstance) {
+            window.moodChartInstance.destroy();
+        }
+        
+        try {
+            window.moodChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days.map(d => d.date.toLocaleDateString('en-US', { weekday: 'short' })),
+                    datasets: [{
+                        label: 'Average Mood',
+                        data: last7Days.map(d => d.average || null),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dayData = last7Days[context.dataIndex];
+                                    return `Mood: ${context.parsed.y.toFixed(1)} (${dayData.count} entries)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const emojis = ['', '😢', '😟', '😐', '🙂', '😊'];
+                                    return emojis[value] || value;
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(99, 102, 241, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(99, 102, 241, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Chart initialization error:', error);
+            canvas.parentElement.innerHTML = '<p>Unable to display chart. Please try again.</p>';
+        }
+    }
+
+    // Export data
+    exportData() {
+        const dataStr = JSON.stringify(this.data, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
         const link = document.createElement('a');
         link.href = url;
-        link.download = filename;
+        link.download = `mindfulme_data_${new Date().toISOString().split('T')[0]}.json`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     }
+}
 
-    // Get device ID
-    getDeviceId() {
-        let deviceId = localStorage.getItem('mindfulme_device_id');
-        if (!deviceId) {
-            deviceId = 'device_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('mindfulme_device_id', deviceId);
-        }
-        return deviceId;
+// Puzzle game implementation
+let puzzleGame = {
+    currentPuzzle: null,
+    startTime: null,
+    score: 0,
+    hintsUsed: 0,
+    timer: null
+};
+
+// Initialize puzzle
+function initPuzzle(type) {
+    puzzleGame.currentPuzzle = type;
+    puzzleGame.startTime = Date.now();
+    puzzleGame.score = 100;
+    puzzleGame.hintsUsed = 0;
+    
+    document.getElementById('puzzleSelection').style.display = 'none';
+    document.getElementById('puzzleGame').style.display = 'block';
+    
+    // Start timer
+    puzzleGame.timer = setInterval(updatePuzzleTimer, 1000);
+    
+    switch(type) {
+        case 'wordsearch':
+            initWordSearch();
+            break;
+        case 'crossword':
+            initCrossword();
+            break;
+        case 'sudoku':
+            initSudoku();
+            break;
     }
 }
 
-// Initialize advanced app
+// Update puzzle timer
+function updatePuzzleTimer() {
+    const elapsed = Math.floor((Date.now() - puzzleGame.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    document.getElementById('puzzleTimer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// Word search puzzle
+function initWordSearch() {
+    const words = ['MINDFUL', 'PEACEFUL', 'GRATEFUL', 'BREATHE', 'CALM'];
+    const gridSize = 10;
+    const grid = [];
+    
+    // Create empty grid
+    for (let i = 0; i < gridSize; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = '';
+        }
+    }
+    
+    // Place words
+    words.forEach(word => {
+        let placed = false;
+        while (!placed) {
+            const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+            const row = Math.floor(Math.random() * gridSize);
+            const col = Math.floor(Math.random() * gridSize);
+            
+            if (canPlaceWord(grid, word, row, col, direction)) {
+                placeWord(grid, word, row, col, direction);
+                placed = true;
+            }
+        }
+    });
+    
+    // Fill empty cells
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            if (grid[i][j] === '') {
+                grid[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            }
+        }
+    }
+    
+    // Display puzzle
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <h3>Find these words:</h3>
+        <div class="word-list">${words.map(w => `<span class="word-item" data-word="${w}">${w}</span>`).join(' ')}</div>
+        <div class="word-search-grid">
+            ${grid.map((row, i) => 
+                row.map((cell, j) => `<div class="grid-cell" data-row="${i}" data-col="${j}">${cell}</div>`).join('')
+            ).join('')}
+        </div>
+    `;
+    
+    // Add click handlers
+    let selecting = false;
+    let selectedCells = [];
+    
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.addEventListener('mousedown', () => {
+            selecting = true;
+            selectedCells = [cell];
+            cell.classList.add('selecting');
+        });
+        
+        cell.addEventListener('mouseenter', () => {
+            if (selecting) {
+                selectedCells.push(cell);
+                cell.classList.add('selecting');
+            }
+        });
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (selecting) {
+            checkWordSelection(selectedCells, words);
+            selectedCells.forEach(cell => cell.classList.remove('selecting'));
+            selecting = false;
+            selectedCells = [];
+        }
+    });
+}
+
+// Helper functions for word search
+function canPlaceWord(grid, word, row, col, direction) {
+    if (direction === 'horizontal') {
+        if (col + word.length > grid[0].length) return false;
+        for (let i = 0; i < word.length; i++) {
+            if (grid[row][col + i] !== '' && grid[row][col + i] !== word[i]) return false;
+        }
+    } else {
+        if (row + word.length > grid.length) return false;
+        for (let i = 0; i < word.length; i++) {
+            if (grid[row + i][col] !== '' && grid[row + i][col] !== word[i]) return false;
+        }
+    }
+    return true;
+}
+
+function placeWord(grid, word, row, col, direction) {
+    if (direction === 'horizontal') {
+        for (let i = 0; i < word.length; i++) {
+            grid[row][col + i] = word[i];
+        }
+    } else {
+        for (let i = 0; i < word.length; i++) {
+            grid[row + i][col] = word[i];
+        }
+    }
+}
+
+function checkWordSelection(cells, words) {
+    const selected = cells.map(cell => cell.textContent).join('');
+    const reversed = selected.split('').reverse().join('');
+    
+    words.forEach(word => {
+        if (selected === word || reversed === word) {
+            cells.forEach(cell => cell.classList.add('found'));
+            document.querySelector(`[data-word="${word}"]`).classList.add('found');
+            puzzleGame.score += 20;
+            checkPuzzleComplete();
+        }
+    });
+}
+
+// Crossword puzzle
+function initCrossword() {
+    const grid = [
+        [1, 'P', 'E', 'A', 'C', 'E', null, null, null, null],
+        ['R', null, null, null, 'A', null, null, 2, 'R', null],
+        [3, 'M', 'E', 'D', 'I', 'T', 'A', 'T', 'I', 'O'],
+        ['A', null, null, null, 'M', null, null, 'H', null, 'N'],
+        ['T', null, 4, 'H', 'A', 'P', 'P', 'Y', null, null],
+        ['H', null, null, null, 'T', null, null, null, null, null],
+        ['E', null, null, null, 'E', null, null, null, null, null],
+        [null, null, null, null, null, null, null, null, null, null]
+    ];
+    
+    const clues = {
+        across: [
+            { number: 1, text: "State of being calm (5)" },
+            { number: 3, text: "Mindfulness practice (10)" },
+            { number: 4, text: "Feeling of joy (5)" }
+        ],
+        down: [
+            { number: 1, text: "To inhale and exhale (7)" },
+            { number: 2, text: "Thankful feeling (8)" }
+        ]
+    };
+    
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <div class="crossword-container">
+            <div class="crossword-grid-wrapper">
+                <div class="crossword-grid">
+                    ${grid.map((row, i) => 
+                        row.map((cell, j) => {
+                            if (cell === null) {
+                                return `<div class="crossword-cell black"></div>`;
+                            } else if (typeof cell === 'number') {
+                                return `
+                                    <div style="position: relative;">
+                                        <span class="crossword-number">${cell}</span>
+                                        <input type="text" 
+                                               class="crossword-cell" 
+                                               data-row="${i}" 
+                                               data-col="${j}" 
+                                               maxlength="1"
+                                               onkeydown="handleCrosswordNav(event, ${i}, ${j})">
+                                    </div>
+                                `;
+                            } else if (typeof cell === 'string') {
+                                return `
+                                    <input type="text" 
+                                           class="crossword-cell" 
+                                           data-row="${i}" 
+                                           data-col="${j}" 
+                                           data-answer="${cell}"
+                                           maxlength="1"
+                                           onkeydown="handleCrosswordNav(event, ${i}, ${j})">
+                                `;
+                            }
+                        }).join('')
+                    ).join('')}
+                </div>
+            </div>
+            
+            <div class="crossword-clues">
+                <h4>Across</h4>
+                ${clues.across.map(c => 
+                    `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
+                ).join('')}
+                
+                <h4>Down</h4>
+                ${clues.down.map(c => 
+                    `<div class="clue"><span class="clue-number">${c.number}.</span> ${c.text}</div>`
+                ).join('')}
+                
+                <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" onclick="checkCrossword()">
+                    Check Answers
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add input event listeners
+    document.querySelectorAll('.crossword-cell:not(.black)').forEach(cell => {
+        cell.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    });
+}
+
+// Handle crossword navigation
+function handleCrosswordNav(event, row, col) {
+    const key = event.key;
+    let nextCell;
+    
+    switch(key) {
+        case 'ArrowUp':
+            nextCell = document.querySelector(`[data-row="${row-1}"][data-col="${col}"]`);
+            break;
+        case 'ArrowDown':
+        case 'Enter':
+            nextCell = document.querySelector(`[data-row="${row+1}"][data-col="${col}"]`);
+            break;
+        case 'ArrowLeft':
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${col-1}"]`);
+            break;
+        case 'ArrowRight':
+        case 'Tab':
+            if (key === 'Tab') event.preventDefault();
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${col+1}"]`);
+            break;
+    }
+    
+    if (nextCell && !nextCell.classList.contains('black')) {
+        nextCell.focus();
+    }
+}
+
+// Check crossword answers
+function checkCrossword() {
+    let correct = 0;
+    let total = 0;
+    
+    document.querySelectorAll('.crossword-cell[data-answer]').forEach(cell => {
+        total++;
+        if (cell.value.toUpperCase() === cell.dataset.answer) {
+            cell.style.backgroundColor = 'rgba(16, 185, 129, 0.3)';
+            correct++;
+        } else if (cell.value) {
+            cell.style.backgroundColor = 'rgba(239, 68, 68, 0.2)';
+        }
+    });
+    
+    if (correct === total) {
+        completePuzzle();
+    } else {
+        setTimeout(() => {
+            document.querySelectorAll('.crossword-cell[data-answer]').forEach(cell => {
+                cell.style.backgroundColor = '';
+            });
+        }, 2000);
+    }
+}
+
+// Sudoku puzzle
+function initSudoku() {
+    const puzzle = [
+        [5,3,0,0,7,0,0,0,0],
+        [6,0,0,1,9,5,0,0,0],
+        [0,9,8,0,0,0,0,6,0],
+        [8,0,0,0,6,0,0,0,3],
+        [4,0,0,8,0,3,0,0,1],
+        [7,0,0,0,2,0,0,0,6],
+        [0,6,0,0,0,0,2,8,0],
+        [0,0,0,4,1,9,0,0,5],
+        [0,0,0,0,8,0,0,7,9]
+    ];
+    
+    const container = document.getElementById('puzzleContainer');
+    container.innerHTML = `
+        <h3>Fill in the numbers 1-9</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Each row, column, and 3x3 box must contain all digits 1-9</p>
+        <div class="sudoku-grid">
+            <div class="sudoku-row-divider row-3"></div>
+            <div class="sudoku-row-divider row-6"></div>
+            ${puzzle.map((row, i) => 
+                row.map((cell, j) => `
+                    <input type="number" 
+                           class="sudoku-cell ${cell !== 0 ? 'fixed' : ''}" 
+                           data-row="${i}" 
+                           data-col="${j}" 
+                           value="${cell || ''}" 
+                           ${cell !== 0 ? 'readonly' : ''}
+                           min="1" 
+                           max="9"
+                           onkeydown="handleSudokuNav(event, ${i}, ${j})"
+                           oninput="validateSudokuInput(this, ${i}, ${j})">
+                `).join('')
+            ).join('')}
+        </div>
+        <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="checkSudokuComplete()">
+            Check Solution
+        </button>
+    `;
+}
+
+// Handle sudoku navigation
+function handleSudokuNav(event, row, col) {
+    const key = event.key;
+    let nextCell;
+    
+    // Prevent default for arrow keys
+    if (key.startsWith('Arrow')) {
+        event.preventDefault();
+    }
+    
+    switch(key) {
+        case 'ArrowUp':
+            nextCell = document.querySelector(`[data-row="${Math.max(0, row-1)}"][data-col="${col}"]`);
+            break;
+        case 'ArrowDown':
+            nextCell = document.querySelector(`[data-row="${Math.min(8, row+1)}"][data-col="${col}"]`);
+            break;
+        case 'ArrowLeft':
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${Math.max(0, col-1)}"]`);
+            break;
+        case 'ArrowRight':
+            nextCell = document.querySelector(`[data-row="${row}"][data-col="${Math.min(8, col+1)}"]`);
+            break;
+    }
+    
+    if (nextCell && !nextCell.classList.contains('fixed')) {
+        nextCell.focus();
+        nextCell.select();
+    }
+}
+
+// Validate sudoku input
+function validateSudokuInput(cell, row, col) {
+    const val = parseInt(cell.value);
+    
+    // Remove any non-numeric or invalid input
+    if (!val || val < 1 || val > 9) {
+        cell.value = '';
+        cell.classList.remove('error');
+        return;
+    }
+    
+    // Check for conflicts
+    let hasConflict = false;
+    
+    // Check row
+    document.querySelectorAll(`[data-row="${row}"]`).forEach(c => {
+        if (c !== cell && c.value === cell.value) {
+            hasConflict = true;
+        }
+    });
+    
+    // Check column
+    document.querySelectorAll(`[data-col="${col}"]`).forEach(c => {
+        if (c !== cell && c.value === cell.value) {
+            hasConflict = true;
+        }
+    });
+    
+    // Check 3x3 box
+    const boxRow = Math.floor(row / 3) * 3;
+    const boxCol = Math.floor(col / 3) * 3;
+    for (let i = boxRow; i < boxRow + 3; i++) {
+        for (let j = boxCol; j < boxCol + 3; j++) {
+            const c = document.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+            if (c !== cell && c.value === cell.value) {
+                hasConflict = true;
+            }
+        }
+    }
+    
+    if (hasConflict) {
+        cell.classList.add('error');
+    } else {
+        cell.classList.remove('error');
+    }
+}
+
+// Check if puzzle is complete
+function checkPuzzleComplete() {
+    const foundWords = document.querySelectorAll('.word-item.found').length;
+    const totalWords = document.querySelectorAll('.word-item').length;
+    
+    if (foundWords === totalWords) {
+        completePuzzle();
+    }
+}
+
+function checkSudokuComplete() {
+    const cells = document.querySelectorAll('.sudoku-cell');
+    let complete = true;
+    let hasErrors = false;
+    
+    cells.forEach(cell => {
+        if (!cell.value) complete = false;
+        if (cell.classList.contains('error')) hasErrors = false;
+    });
+    
+    if (complete && !hasErrors) {
+        // Validate solution (simplified)
+        completePuzzle();
+    } else {
+        alert('Please complete the puzzle and fix any errors (highlighted in red)');
+    }
+}
+
+// Complete puzzle
+function completePuzzle() {
+    clearInterval(puzzleGame.timer);
+    
+    const elapsed = Math.floor((Date.now() - puzzleGame.startTime) / 1000);
+    const finalScore = Math.max(0, puzzleGame.score - puzzleGame.hintsUsed * 10);
+    
+    app.data.puzzlesCompleted = (app.data.puzzlesCompleted || 0) + 1;
+    app.saveData();
+    app.checkAchievements();
+    
+    document.getElementById('puzzleContainer').innerHTML = `
+        <div class="puzzle-complete">
+            <h2>🎉 Puzzle Complete!</h2>
+            <div class="complete-stats">
+                <div>Time: ${Math.floor(elapsed / 60)}:${(elapsed % 60).toString().padStart(2, '0')}</div>
+                <div>Score: ${finalScore}</div>
+                <div>Hints Used: ${puzzleGame.hintsUsed}</div>
+            </div>
+            <button class="btn btn-primary" onclick="resetPuzzle()">Play Another</button>
+        </div>
+    `;
+}
+
+// Reset puzzle
+function resetPuzzle() {
+    puzzleGame = {
+        currentPuzzle: null,
+        startTime: null,
+        score: 0,
+        hintsUsed: 0,
+        timer: null
+    };
+    
+    document.getElementById('puzzleSelection').style.display = 'block';
+    document.getElementById('puzzleGame').style.display = 'none';
+}
+
+// Get hint
+function getHint() {
+    puzzleGame.hintsUsed++;
+    puzzleGame.score -= 10;
+    
+    // Provide hint based on puzzle type
+    switch(puzzleGame.currentPuzzle) {
+        case 'wordsearch':
+            // Highlight first letter of unfound word
+            const unfound = document.querySelector('.word-item:not(.found)');
+            if (unfound) {
+                alert(`Look for "${unfound.dataset.word[0]}" to start finding "${unfound.dataset.word}"`);
+            }
+            break;
+        case 'crossword':
+            alert('Try filling in the shorter words first!');
+            break;
+        case 'sudoku':
+            alert('Look for rows, columns, or boxes with only one missing number!');
+            break;
+    }
+}
+
+// Navigation functions
+function showPage(page) {
+    // Hide all pages
+    document.querySelectorAll('.hero-section, .mood-tracker, .breathing-exercise, .journal, .insights, .resources, .puzzle-feature').forEach(section => {
+        section.style.display = 'none';
+    });
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+    
+    // Show selected page
+    switch(page) {
+        case 'home':
+            document.querySelector('.hero-section').style.display = 'block';
+            app.updateStats();
+            app.displayAchievements();
+            break;
+        case 'mood':
+            document.querySelector('.mood-tracker').style.display = 'block';
+            app.updateDateTime();
+            break;
+        case 'breathe':
+            document.querySelector('.breathing-exercise').style.display = 'block';
+            break;
+        case 'journal':
+            document.querySelector('.journal').style.display = 'block';
+            app.loadJournalPrompt();
+            app.loadRecentEntries();
+            break;
+        case 'insights':
+            document.querySelector('.insights').style.display = 'block';
+            app.updateInsights();
+            break;
+        case 'resources':
+            document.querySelector('.resources').style.display = 'block';
+            break;
+        case 'puzzle':
+            document.querySelector('.puzzle-feature').style.display = 'block';
+            break;
+    }
+}
+
+// Pause breathing function
+function pauseBreathing() {
+    if (app) {
+        app.pauseBreathing();
+    }
+}
+
+// Initialize app when page loads
 let app;
 document.addEventListener('DOMContentLoaded', () => {
-    app = new MindfulMeAdvanced();
+    app = new MindfulMeApp();
+    
+    // Show home page by default
     showPage('home');
 });
-
-// Service Worker for PWA (create separate sw.js file)
-const swCode = `
-self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open('mindfulme-v2').then(cache => {
-            return cache.addAll([
-                '/',
-                '/index.html',
-                '/css/styles.css',
-                '/js/app.js',
-                '/manifest.json'
-            ]);
-        })
-    );
-});
-
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
-        })
-    );
-});
-`;
-
-// End of app.js
-
-                    
